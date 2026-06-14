@@ -1,0 +1,81 @@
+package usecase
+
+import (
+	"context"
+	"fmt"
+	"log/slog"
+	"time"
+	"trec/internal/core/logger"
+	"trec/internal/domain"
+)
+
+type recordingTicker interface {
+	Start(ctx context.Context)
+	Tick() <-chan time.Time
+}
+
+type recordingInput interface {
+	Get(prompt string) (string, error)
+}
+
+type recordingPrinter interface {
+	PrintLine(text string)
+	Print(text string)
+}
+
+type Recording struct {
+	repo     domain.RecordRepository
+	ticker   recordingTicker
+	inputter recordingInput
+	printer  recordingPrinter
+}
+
+func NewRecording(repo domain.RecordRepository, ticker recordingTicker, inputter recordingInput, printer recordingPrinter) *Recording {
+	return &Recording{
+		repo:     repo,
+		ticker:   ticker,
+		inputter: inputter,
+		printer:  printer,
+	}
+}
+
+func (uc *Recording) Recording(ctx context.Context, label string) error {
+	slog.Debug("Execute Recording")
+
+	// start recording
+	recoding := true
+	start := time.Now()
+	uc.ticker.Start(ctx)
+	for recoding {
+		select {
+		case <-ctx.Done():
+			// stop
+			stop := time.Now()
+			uc.printer.Print("")
+			slog.Debug("Stop recording", "label", label, "start", start, "stop", stop)
+
+			// input memo
+			memo, err := uc.inputter.Get("Input memo: ")
+			if err != nil {
+				logger.Error("Recording", "input memo error", err)
+				memo = ""
+			}
+			slog.Debug("Inputted memo", "memo", memo)
+
+			// add to DB
+			if record, err := uc.repo.Add(label, start, stop, memo); err != nil {
+				logger.Error("Recording", "Failed to add record", err, "label", label, "start", start, "stop", stop, "memo", memo)
+			} else {
+				slog.Debug("Recorded to DB", "record", record)
+			}
+
+			uc.printer.Print("Recorded.")
+			recoding = false
+		case <-uc.ticker.Tick():
+			uc.printer.PrintLine(fmt.Sprintf("Recording... %s", time.Since(start).Truncate(time.Second)))
+		}
+	}
+
+	slog.Debug("Finished Recording")
+	return nil
+}

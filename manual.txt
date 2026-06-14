@@ -1,0 +1,19 @@
+USEAGE: trec [mode] [options]
+Mode:
+  -r --recording : Start recording with label.
+  -l --lookup    : Lookup recorded information by the label or the pattern or date.
+  -h --help      : Show help
+
+USEAGE: trec -r label
+  Records time duration with the label and the memo.
+  Stop recording when input CTRL+C.
+Options:
+  label : Label of record.
+
+USEAGE: trec -l [options]
+  Show records.
+Options:
+  --format-simple : simple format. (default)
+  --format-full   : full format with recrd ID.
+  --asc           : order by ASC. (default)
+  --desc          : order by DESC.
