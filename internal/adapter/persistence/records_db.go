@@ -2,7 +2,6 @@ package persistence
 
 import (
 	"log/slog"
-	"strings"
 	"time"
 	"trec/internal/adapter/model"
 	"trec/internal/core/logger"
@@ -43,15 +42,23 @@ func (d *RecordsDatabase) Add(label string, start time.Time, end time.Time, memo
 	return model.NewRecord(record.Label, record.StartTime, record.EndTime, record.Note), nil
 }
 
-func (d *RecordsDatabase) GetAll(order domain.OrderBy) (domain.RecordList, error) {
-	slog.Debug("Called RecordsDatabase.GetAll", "order", order)
+func (d *RecordsDatabase) GetAll(filter domain.Filter) (domain.RecordList, error) {
+	slog.Debug("Called RecordsDatabase.GetAll", "filter", filter)
 
 	db := d.infra.DB()
 	// set order
-	if strings.HasPrefix(string(order), string(domain.OrderByDuration)) {
-		db = db.Order("julianday(end_time) - julianday(start_time) ASC")
-	} else {
-		db = db.Order(order)
+	// if strings.HasPrefix(string(order), string(domain.OrderByDuration)) {
+	// 	db = db.Order("julianday(end_time) - julianday(start_time) ASC")
+	// } else {
+	// 	db = db.Order(order)
+	// }
+
+	// set filter
+	if filter.Today() {
+		//TODO: DB dependent
+		slog.Debug("filtered by start_id at today")
+		today := time.Now().Format("2006-01-02")
+		db = db.Where("DATE(start_time) = ?", today)
 	}
 
 	// get records

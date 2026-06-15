@@ -32,3 +32,7 @@ const (
 	OrderByAsc      OrderBy = "ASC"
 	OrderByDesc     OrderBy = "DESC"
 )
+
+type Filter interface {
+	Today() bool
+}

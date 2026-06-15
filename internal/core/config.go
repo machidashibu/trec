@@ -29,8 +29,13 @@ type RecordingConfig struct {
 }
 
 type LookupConfig struct {
-	DefaultOrder  domain.OrderBy `yaml:"order"`
-	DefaultFormat string         `yaml:"format"`
+	DefaultOrder  domain.OrderBy     `yaml:"order"`
+	DefaultFormat string             `yaml:"format"`
+	DefaultFilter LookupFilterConfig `yaml:"filter"`
+}
+
+type LookupFilterConfig struct {
+	StartTimeToday bool `yaml:"today"`
 }
 
 func (c *Config) ParseArgs(args []string) error {
@@ -70,6 +75,9 @@ func (c *Config) ParseLookupOptions(args []string) error {
 	c.Lookup.DefaultFormat = "simple" // default: simple
 	if slices.Contains(args, "--format-full") {
 		c.Lookup.DefaultFormat = "full"
+	}
+	if slices.Contains(args, "--today") {
+		c.Lookup.DefaultFilter.StartTimeToday = true
 	}
 	return nil
 }
@@ -116,4 +124,12 @@ func (c Config) LookupOrder() domain.OrderBy {
 
 func (c Config) LookupFormat() string {
 	return c.Lookup.DefaultFormat
+}
+
+func (c Config) LookupFilter() domain.Filter {
+	return c.Lookup.DefaultFilter
+}
+
+func (c LookupFilterConfig) Today() bool {
+	return c.StartTimeToday
 }
