@@ -4,6 +4,7 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/signal"
 	"trec/internal/adapter/persistence"
@@ -15,6 +16,8 @@ import (
 	"trec/internal/usecase"
 )
 
+const configPath = "config.yaml"
+
 //go:embed manual.txt
 var helpText string
 
@@ -25,6 +28,10 @@ func main() {
 func run() int {
 	// load config
 	config := new(core.Config)
+	if err := config.Read(configPath); err != nil {
+		// used default setting if file is not exists. (do not exit)
+		slog.Error("config read error", "path", configPath)
+	}
 	if err := config.ParseArgs(os.Args[1:]); err != nil {
 		return manual()
 	}

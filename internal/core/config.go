@@ -2,9 +2,12 @@ package core
 
 import (
 	"log/slog"
+	"os"
 	"slices"
 	"time"
 	"trec/internal/domain"
+
+	yaml "gopkg.in/yaml.v3"
 )
 
 type Mode string
@@ -36,6 +39,15 @@ type LookupConfig struct {
 
 type LookupFilterConfig struct {
 	StartTimeToday bool `yaml:"today"`
+}
+
+func (c *Config) Read(path string) error {
+	f, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+
+	return yaml.Unmarshal(f, &c)
 }
 
 func (c *Config) ParseArgs(args []string) error {
@@ -72,7 +84,6 @@ func (c *Config) ParseLookupOptions(args []string) error {
 		order_dir = domain.OrderByDesc
 	}
 	c.Lookup.DefaultOrder = order_col + " " + order_dir
-	c.Lookup.DefaultFormat = "simple" // default: simple
 	if slices.Contains(args, "--format-full") {
 		c.Lookup.DefaultFormat = "full"
 	}
@@ -123,7 +134,11 @@ func (c Config) LookupOrder() domain.OrderBy {
 }
 
 func (c Config) LookupFormat() string {
-	return c.Lookup.DefaultFormat
+	if c.Lookup.DefaultFormat == "" {
+		return "simple"
+	} else {
+		return c.Lookup.DefaultFormat
+	}
 }
 
 func (c Config) LookupFilter() domain.Filter {
