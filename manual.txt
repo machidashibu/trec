@@ -15,5 +15,4 @@ USEAGE: trec -l [options]
 Options:
   --format-simple : simple format. (default)
   --format-full   : full format with recrd ID.
-  --asc           : order by ASC. (default)
-  --desc          : order by DESC.
+  --today         : Filter by today.

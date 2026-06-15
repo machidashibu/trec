@@ -1,6 +1,7 @@
 package presenter
 
 import (
+	"fmt"
 	"maps"
 	"slices"
 	"trec/internal/domain"
@@ -26,4 +27,5 @@ func (r LookupReporter) Report(list domain.RecordList) {
 	for _, id := range slices.Sorted(maps.Keys(list)) {
 		r.printer.Print(r.formatter.String(domain.OrderID(id), list[id]))
 	}
+	r.printer.Print(fmt.Sprintf("%d items", len(list)))
 }
