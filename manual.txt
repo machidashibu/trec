@@ -16,3 +16,4 @@ Options:
   --format-simple : simple format. (default)
   --format-full   : full format with recrd ID.
   --today         : Filter by today.
+  --latest-only   : Keep only the latest record for each unique label.

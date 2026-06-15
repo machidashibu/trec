@@ -35,4 +35,5 @@ const (
 
 type Filter interface {
 	Today() bool
+	LatestOnly() bool
 }

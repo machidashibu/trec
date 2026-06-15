@@ -38,7 +38,8 @@ type LookupConfig struct {
 }
 
 type LookupFilterConfig struct {
-	StartTimeToday bool `yaml:"today"`
+	StartTimeToday     bool `yaml:"today"`
+	LatestOnlyPerLabel bool `yaml:"latest_only"`
 }
 
 func (c *Config) Read(path string) error {
@@ -89,6 +90,9 @@ func (c *Config) ParseLookupOptions(args []string) error {
 	}
 	if slices.Contains(args, "--today") {
 		c.Lookup.DefaultFilter.StartTimeToday = true
+	}
+	if slices.Contains(args, "--latest-only") {
+		c.Lookup.DefaultFilter.LatestOnlyPerLabel = true
 	}
 	return nil
 }
@@ -147,4 +151,8 @@ func (c Config) LookupFilter() domain.Filter {
 
 func (c LookupFilterConfig) Today() bool {
 	return c.StartTimeToday
+}
+
+func (c LookupFilterConfig) LatestOnly() bool {
+	return c.LatestOnlyPerLabel
 }

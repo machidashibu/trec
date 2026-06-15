@@ -2,3 +2,4 @@ lookup:
   format: simple
   filter:
     today: true
+    latest_only: true

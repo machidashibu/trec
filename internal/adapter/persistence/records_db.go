@@ -55,10 +55,21 @@ func (d *RecordsDatabase) GetAll(filter domain.Filter) (domain.RecordList, error
 
 	// set filter
 	if filter.Today() {
-		//TODO: DB dependent
+		// TODO: DB dependent
 		slog.Debug("filtered by start_id at today")
 		today := time.Now().Format("2006-01-02")
 		db = db.Where("DATE(start_time) = ?", today)
+	}
+	if filter.LatestOnly() {
+		// keep only the latest record for each unique label
+		sub := d.infra.DB().Model(&RecordsSchema{}).
+			Select("label, MAX(start_time) AS max_start_time").
+			Group("label")
+
+		db = db.Joins(
+			"JOIN (?) AS latest ON records.label = latest.label AND records.start_time = latest.max_start_time",
+			sub,
+		)
 	}
 
 	// get records
