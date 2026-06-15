@@ -15,5 +15,6 @@ USEAGE: trec -l [options]
 Options:
   --format-simple : Simple format. (default)
   --format-full   : Full format with recrd ID.
+  --no-filter     : No filtering.
   --today         : Filter by today.
   --latest-only   : Keep only the latest record for each unique label.

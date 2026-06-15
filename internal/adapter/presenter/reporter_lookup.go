@@ -2,13 +2,11 @@ package presenter
 
 import (
 	"fmt"
-	"maps"
-	"slices"
 	"trec/internal/domain"
 )
 
 type lookupFormatter interface {
-	String(id domain.OrderID, record domain.Record) string
+	String(id uint64, record domain.Record) string
 }
 
 type LookupReporter struct {
@@ -24,8 +22,9 @@ func NewLookupReporter(printer reportPrinter, formatter lookupFormatter) *Lookup
 }
 
 func (r LookupReporter) Report(list domain.RecordList) {
-	for _, id := range slices.Sorted(maps.Keys(list)) {
-		r.printer.Print(r.formatter.String(domain.OrderID(id), list[id]))
+	for index := 0; index < list.Count(); index++ {
+		id, record := list.Get(index)
+		r.printer.Print(r.formatter.String(id, record))
 	}
-	r.printer.Print(fmt.Sprintf("%d items", len(list)))
+	r.printer.Print(fmt.Sprintf("%d items", list.Count()))
 }

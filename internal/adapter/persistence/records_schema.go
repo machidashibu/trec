@@ -36,28 +36,15 @@ func fromDomain(record domain.Record) *RecordsSchema {
 	}
 }
 
-func toDomainArray(records []RecordsSchema) domain.RecordList {
-	list := make(domain.RecordList, len(records))
-	for index, record := range records {
-		list[domain.OrderID(index)] = model.NewRecord(
-			record.Label,
-			record.StartTime,
-			record.EndTime,
-			record.Note,
-		)
-	}
-	return list
-}
-
-func toDmainList(records []RecordsSchema) domain.RecordList {
-	list := make(domain.RecordList, len(records))
+func toRecordList(records []RecordsSchema) domain.RecordList {
+	list := model.NewRecordList()
 	for _, record := range records {
-		list[domain.OrderID(record.ID)] = model.NewRecord(
+		list.Add(record.ID, model.NewRecord(
 			record.Label,
 			record.StartTime,
 			record.EndTime,
 			record.Note,
-		)
+		))
 	}
 	return list
 }

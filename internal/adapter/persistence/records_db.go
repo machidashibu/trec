@@ -55,10 +55,10 @@ func (d *RecordsDatabase) GetAll(filter domain.Filter) (domain.RecordList, error
 
 	// set filter
 	if filter.Today() {
-		// TODO: DB dependent
-		slog.Debug("filtered by start_id at today")
-		today := time.Now().Format("2006-01-02")
-		db = db.Where("DATE(start_time) = ?", today)
+		now := time.Now()
+		startOfDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+		endOfDay := startOfDay.Add(24 * time.Hour)
+		db = db.Where("start_time >= ? AND start_time < ?", startOfDay, endOfDay)
 	}
 	if filter.LatestOnly() {
 		// keep only the latest record for each unique label
@@ -79,5 +79,5 @@ func (d *RecordsDatabase) GetAll(filter domain.Filter) (domain.RecordList, error
 	}
 	slog.Debug("Get all records", "len", len(records))
 
-	return toDomainArray(records), nil
+	return toRecordList(records), nil
 }

@@ -16,9 +16,10 @@ type Record interface {
 	Note() string
 }
 
-type OrderID uint64
-
-type RecordList map[OrderID]Record
+type RecordList interface {
+	Count() int
+	Get(index int) (uint64, Record)
+}
 
 type OrderBy string
 

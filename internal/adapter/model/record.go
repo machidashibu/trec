@@ -21,18 +21,18 @@ func NewRecord(label string, startTime time.Time, endTime time.Time, note string
 	}
 }
 
-func (s Record) Label() string {
-	return s.label
+func (r Record) Label() string {
+	return r.label
 }
 
-func (s Record) StartTime() time.Time {
-	return s.startTime
+func (r Record) StartTime() time.Time {
+	return r.startTime
 }
 
-func (s Record) EndTime() time.Time {
-	return s.endTime
+func (r Record) EndTime() time.Time {
+	return r.endTime
 }
 
-func (s Record) Note() string {
-	return s.note
+func (r Record) Note() string {
+	return r.note
 }

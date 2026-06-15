@@ -16,7 +16,7 @@ func NewLookupFormatter(format string) *LookupFormatter {
 	}
 }
 
-func (f LookupFormatter) String(id domain.OrderID, record domain.Record) string {
+func (f LookupFormatter) String(id uint64, record domain.Record) string {
 	d := record.EndTime().Sub(record.StartTime())
 	switch f.format {
 	case "full":

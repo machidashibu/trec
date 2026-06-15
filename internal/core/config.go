@@ -88,11 +88,18 @@ func (c *Config) ParseLookupOptions(args []string) error {
 	if slices.Contains(args, "--format-full") {
 		c.Lookup.DefaultFormat = "full"
 	}
-	if slices.Contains(args, "--today") {
-		c.Lookup.DefaultFilter.StartTimeToday = true
-	}
-	if slices.Contains(args, "--latest-only") {
-		c.Lookup.DefaultFilter.LatestOnlyPerLabel = true
+	if slices.Contains(args, "--no-filter") {
+		// clear all filter
+		c.Lookup.DefaultFilter.StartTimeToday = false
+		c.Lookup.DefaultFilter.LatestOnlyPerLabel = false
+	} else {
+		// parse filter options
+		if slices.Contains(args, "--today") {
+			c.Lookup.DefaultFilter.StartTimeToday = true
+		}
+		if slices.Contains(args, "--latest-only") {
+			c.Lookup.DefaultFilter.LatestOnlyPerLabel = true
+		}
 	}
 	return nil
 }

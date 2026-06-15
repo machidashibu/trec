@@ -39,7 +39,7 @@ func (uc *Lookup) Lookup(opts lookupOptions) error {
 	if err != nil {
 		return logger.Error("Lookup", "get all error", err)
 	}
-	slog.Debug("Get all records", "len", len(list))
+	slog.Debug("Get all records", "len", list.Count())
 
 	// show list
 	uc.reporter.Report(list)
