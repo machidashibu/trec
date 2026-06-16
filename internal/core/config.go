@@ -3,8 +3,10 @@ package core
 import (
 	"log/slog"
 	"os"
+	"regexp"
 	"slices"
 	"time"
+	"trec/internal/core/logger"
 	"trec/internal/domain"
 
 	yaml "gopkg.in/yaml.v3"
@@ -28,7 +30,8 @@ type Config struct {
 }
 
 type RecordingConfig struct {
-	DefaultLabel string `yaml:"label"`
+	DefaultLabel      string `yaml:"label"`
+	ValidationPattern string `yaml:"validation"`
 }
 
 type LookupConfig struct {
@@ -109,6 +112,15 @@ func (c *Config) ParseRecordingOptions(args []string) error {
 		return domain.ErrorInvalidConfig
 	}
 	c.Recording.DefaultLabel = args[0]
+	if c.Recording.ValidationPattern != "" {
+		matched, err := regexp.MatchString(c.Recording.ValidationPattern, c.Recording.DefaultLabel)
+		if err != nil {
+			return logger.Error("Config", "label validattion pattern error", err, "pattern", c.Recording.ValidationPattern, "label", c.Recording.DefaultLabel)
+		}
+		if !matched {
+			return logger.Error("config", "label validation error", domain.ErrorInvalidLabelPattern, "pattern", c.Recording.ValidationPattern, "label", c.Recording.DefaultLabel)
+		}
+	}
 	return nil
 }
 

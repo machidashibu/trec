@@ -6,7 +6,8 @@ import (
 )
 
 var (
-	ErrorInvalidConfig = errors.New("invalid config")
+	ErrorInvalidConfig       = errors.New("invalid config")
+	ErrorInvalidLabelPattern = errors.New("invalid label pattern")
 )
 
 type Record interface {

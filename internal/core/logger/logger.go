@@ -14,25 +14,23 @@ type loggerConfig interface {
 }
 
 func ApplyConfig(config loggerConfig) error {
-	if config.LogPath() == "" {
-		return nil // no logging
-	}
-
-	var logw io.Writer
-	if config.LogIsOverwrite() {
-		// Create or overwrite the log file
-		f, err := os.Create(config.LogPath())
-		if err != nil {
-			return fmt.Errorf("failed to create log file: %w", err)
+	var logw io.Writer = io.Discard // default: no logging
+	if config.LogPath() != "" {
+		if config.LogIsOverwrite() {
+			// Create or overwrite the log file
+			f, err := os.Create(config.LogPath())
+			if err != nil {
+				return fmt.Errorf("failed to create log file: %w", err)
+			}
+			logw = f
+		} else {
+			// Open the log file for appending
+			f, err := os.OpenFile(config.LogPath(), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+			if err != nil {
+				return fmt.Errorf("failed to open log file: %w", err)
+			}
+			logw = f
 		}
-		logw = f
-	} else {
-		// Open the log file for appending
-		f, err := os.OpenFile(config.LogPath(), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-		if err != nil {
-			return fmt.Errorf("failed to open log file: %w", err)
-		}
-		logw = f
 	}
 
 	// Create a new logger with the specified log level and output

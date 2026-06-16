@@ -32,12 +32,14 @@ func run() int {
 		// used default setting if file is not exists. (do not exit)
 		slog.Error("config read error", "path", configPath)
 	}
-	if err := config.ParseArgs(os.Args[1:]); err != nil {
-		return manual()
-	}
 
 	// configure logger
 	if err := logger.ApplyConfig(config); err != nil {
+		return exit(err)
+	}
+
+	// parse and overwrite configuration by command line arguments
+	if err := config.ParseArgs(os.Args[1:]); err != nil {
 		return exit(err)
 	}
 
@@ -45,7 +47,7 @@ func run() int {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	// parepare database
+	// prepare database
 	db, err := database.OpenSQLite(config)
 	if err != nil {
 		return exit(err)
@@ -56,7 +58,7 @@ func run() int {
 		return exit(err)
 	}
 
-	// parepare input/output
+	// prepare input/output
 	inputter := infra.NewConsoleReader()
 	printer := infra.NewConsolePrinter()
 
