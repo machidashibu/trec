@@ -16,7 +16,7 @@ import (
 	"trec/internal/usecase"
 )
 
-const configPath = "config.yaml"
+const configPath = "trec.yaml"
 
 //go:embed manual.txt
 var helpText string
