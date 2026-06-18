@@ -23,19 +23,25 @@ type recordingPrinter interface {
 	Print(text string)
 }
 
-type Recording struct {
-	repo     domain.RecordRepository
-	ticker   recordingTicker
-	inputter recordingInput
-	printer  recordingPrinter
+type recordingTimeFormatter interface {
+	String(d time.Duration) string
 }
 
-func NewRecording(repo domain.RecordRepository, ticker recordingTicker, inputter recordingInput, printer recordingPrinter) *Recording {
+type Recording struct {
+	repo      domain.RecordRepository
+	ticker    recordingTicker
+	inputter  recordingInput
+	printer   recordingPrinter
+	formatter recordingTimeFormatter
+}
+
+func NewRecording(repo domain.RecordRepository, ticker recordingTicker, inputter recordingInput, printer recordingPrinter, formatter recordingTimeFormatter) *Recording {
 	return &Recording{
-		repo:     repo,
-		ticker:   ticker,
-		inputter: inputter,
-		printer:  printer,
+		repo:      repo,
+		ticker:    ticker,
+		inputter:  inputter,
+		printer:   printer,
+		formatter: formatter,
 	}
 }
 
@@ -72,7 +78,7 @@ func (uc *Recording) Recording(ctx context.Context, label string) error {
 			uc.printer.Print("Recorded.")
 			recoding = false
 		case <-uc.ticker.Tick():
-			uc.printer.PrintLine(fmt.Sprintf("Recording... %s", time.Since(start).Truncate(time.Second)))
+			uc.printer.PrintLine(fmt.Sprintf("Recording... %s", uc.formatter.String(time.Since(start).Truncate(time.Second))))
 		}
 	}
 

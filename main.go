@@ -67,13 +67,14 @@ func run() int {
 	case core.ModeRecording:
 		// Start recording
 		ticker := infra.NewTicker(config.Interval())
-		uc := usecase.NewRecording(repoRecord, ticker, inputter, printer)
+		formatter := presenter.NewDurationFormatter(config.RecordingTimeformat())
+		uc := usecase.NewRecording(repoRecord, ticker, inputter, printer, formatter)
 		if err := uc.Recording(ctx, config.Label()); err != nil {
 			return exit(err)
 		}
 	case core.ModeLookup:
 		// Lookup records
-		formatter := presenter.NewLookupFormatter(config.LookupFormat())
+		formatter := presenter.NewLookupFormatter(config.LookupFormat(), config.LookupTimeFormat())
 		reporter := presenter.NewLookupReporter(printer, formatter)
 		uc := usecase.NewLookup(repoRecord, reporter)
 		if err := uc.Lookup(config); err != nil {

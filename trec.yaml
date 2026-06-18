@@ -1,5 +1,8 @@
+recording:
+  time_format: "#:#"
 lookup:
   format: simple
+  time_format: "#:#"
   filter:
     today: true
     latest_only: true

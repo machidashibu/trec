@@ -7,12 +7,14 @@ import (
 )
 
 type LookupFormatter struct {
-	format string
+	format     string
+	timeFormat *DurationFormatter
 }
 
-func NewLookupFormatter(format string) *LookupFormatter {
+func NewLookupFormatter(format, timeFormat string) *LookupFormatter {
 	return &LookupFormatter{
-		format: format,
+		format:     format,
+		timeFormat: NewDurationFormatter(timeFormat),
 	}
 }
 
@@ -26,10 +28,10 @@ func (f LookupFormatter) String(id uint64, record domain.Record) string {
 			record.Note(),
 			record.StartTime().Format(time.DateTime),
 			record.EndTime().Format(time.DateTime),
-			ToDurationString(d),
+			f.timeFormat.String(d),
 		)
 	// case "simple":
 	default:
-		return fmt.Sprintf("%s %s %s", record.Label(), record.Note(), ToDurationString(d))
+		return fmt.Sprintf("%s %s %s", record.Label(), record.Note(), f.timeFormat.String(d))
 	}
 }

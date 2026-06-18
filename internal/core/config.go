@@ -32,12 +32,14 @@ type Config struct {
 type RecordingConfig struct {
 	DefaultLabel      string `yaml:"label"`
 	ValidationPattern string `yaml:"validation"`
+	DefaultTimeformat string `yaml:"time_format"`
 }
 
 type LookupConfig struct {
-	DefaultOrder  domain.OrderBy     `yaml:"order"`
-	DefaultFormat string             `yaml:"format"`
-	DefaultFilter LookupFilterConfig `yaml:"filter"`
+	DefaultOrder      domain.OrderBy     `yaml:"order"`
+	DefaultFormat     string             `yaml:"format"`
+	DefaultTimeformat string             `yaml:"time_format"`
+	DefaultFilter     LookupFilterConfig `yaml:"filter"`
 }
 
 type LookupFilterConfig struct {
@@ -97,7 +99,9 @@ func (c *Config) ParseLookupOptions(args []string) error {
 		c.Lookup.DefaultFilter.LatestOnlyPerLabel = false
 	} else {
 		// parse filter options
-		if slices.Contains(args, "--today") {
+		if slices.Contains(args, "--all-days") {
+			c.Lookup.DefaultFilter.StartTimeToday = false
+		} else if slices.Contains(args, "--today") {
 			c.Lookup.DefaultFilter.StartTimeToday = true
 		}
 		if slices.Contains(args, "--latest-only") {
@@ -152,6 +156,10 @@ func (c Config) Label() string {
 	return c.Recording.DefaultLabel
 }
 
+func (c Config) RecordingTimeformat() string {
+	return c.Recording.DefaultTimeformat
+}
+
 func (c Config) LookupOrder() domain.OrderBy {
 	return domain.OrderBy(c.Lookup.DefaultOrder)
 }
@@ -162,6 +170,10 @@ func (c Config) LookupFormat() string {
 	} else {
 		return c.Lookup.DefaultFormat
 	}
+}
+
+func (c Config) LookupTimeFormat() string {
+	return c.Lookup.DefaultTimeformat
 }
 
 func (c Config) LookupFilter() domain.Filter {

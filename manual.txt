@@ -17,4 +17,5 @@ Options:
   --format-full   : Full format with recrd ID.
   --no-filter     : No filtering.
   --today         : Filter by today.
+  --all-days      : No filtering by start_time.
   --latest-only   : Keep only the latest record for each unique label.
