@@ -25,7 +25,8 @@ func (t *Ticker) Start(ctx context.Context) {
 			select {
 			case <-ctx.Done():
 				return
-			case t.notify <- time.Now():
+			case now := <-ticker.C:
+				t.notify <- now
 			}
 		}
 	}()
