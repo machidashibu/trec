@@ -49,10 +49,9 @@ func (uc *Recording) Recording(ctx context.Context, label string) error {
 	slog.Debug("Execute Recording")
 
 	// start recording
-	recoding := true
 	start := time.Now()
 	uc.printer.PrintLine(fmt.Sprintf("Recording... %s", uc.formatter.String(0)))
-	for recoding {
+	for {
 		select {
 		case <-ctx.Done():
 			// stop
@@ -69,19 +68,18 @@ func (uc *Recording) Recording(ctx context.Context, label string) error {
 			slog.Debug("Inputted memo", "memo", memo)
 
 			// add to DB
-			if record, err := uc.repo.Add(label, start, stop, memo); err != nil {
-				logger.Error("Recording", "Failed to add record", err, "label", label, "start", start, "stop", stop, "memo", memo)
-			} else {
-				slog.Debug("Recorded to DB", "record", record)
+			record, err := uc.repo.Add(label, start, stop, memo)
+			if err != nil {
+				return logger.Error("Recording", "Failed to add record", err, "label", label, "start", start, "stop", stop, "memo", memo)
 			}
+			slog.Debug("Recorded to DB", "record", record)
 
 			uc.printer.Print("Recorded.")
-			recoding = false
+
+			slog.Debug("Finished Recording")
+			return nil
 		case <-uc.ticker.Tick():
 			uc.printer.PrintLine(fmt.Sprintf("Recording... %s", uc.formatter.String(time.Since(start).Truncate(time.Second))))
 		}
 	}
-
-	slog.Debug("Finished Recording")
-	return nil
 }
