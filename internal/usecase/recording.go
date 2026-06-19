@@ -51,7 +51,7 @@ func (uc *Recording) Recording(ctx context.Context, label string) error {
 	// start recording
 	recoding := true
 	start := time.Now()
-	uc.ticker.Start(ctx)
+	uc.printer.PrintLine(fmt.Sprintf("Recording... %s", uc.formatter.String(0)))
 	for recoding {
 		select {
 		case <-ctx.Done():

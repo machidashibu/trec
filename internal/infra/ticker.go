@@ -18,18 +18,16 @@ func NewTicker(interval time.Duration) *Ticker {
 }
 
 func (t *Ticker) Start(ctx context.Context) {
-	go func() {
-		ticker := time.NewTicker(t.interval)
-		defer ticker.Stop()
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case now := <-ticker.C:
-				t.notify <- now
-			}
+	ticker := time.NewTicker(t.interval)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case now := <-ticker.C:
+			t.notify <- now
 		}
-	}()
+	}
 }
 
 func (t *Ticker) Tick() <-chan time.Time {
