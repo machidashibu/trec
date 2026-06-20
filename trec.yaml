@@ -1,4 +1,6 @@
 # Sample configuration file
+log:
+  level: debug
 recording:
   time_format: "#:#"
 lookup:

@@ -6,7 +6,7 @@ import (
 )
 
 type Config struct {
-	Log       LogConfig       `yaml:"yaml:"log""`
+	Log       LogConfig       `yaml:"log"`
 	Recording RecordingConfig `yaml:"recording"`
 	Lookup    LookupConfig    `yaml:"lookup"`
 }
