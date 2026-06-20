@@ -7,8 +7,8 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
-	"trec/internal/adapter/persistence"
 	"trec/internal/adapter/presenter"
+	"trec/internal/adapter/repository"
 	"trec/internal/core"
 	"trec/internal/core/logger"
 	"trec/internal/infra"
@@ -52,7 +52,7 @@ func run() int {
 	if err != nil {
 		return exit(err)
 	}
-	factory := persistence.NewFactory(db)
+	factory := repository.NewFactory(db)
 	repoRecord, err := factory.CreateRecordRepository()
 	if err != nil {
 		return exit(err)
