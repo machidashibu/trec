@@ -1,3 +1,4 @@
+# Sample configuration file
 recording:
   time_format: "#:#"
 lookup:

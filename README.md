@@ -1,6 +1,9 @@
 # trec
 
-trec is a time recorder with labels and notes.
+trec is a time recorder with labels and results.
+
+This is a small tool I built to record test times and results at work—hence the name 'trec' (test/time recorder). 
+I hope it helps others who do similar tasks.
 
 ## Usage
 
