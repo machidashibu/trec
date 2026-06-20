@@ -7,8 +7,6 @@ I hope it helps others who do similar tasks.
 
 ## Usage
 
-→ See also: [manual.txt](manual.txt)
-
 ```
 $ trec test1
 Recording... 1m15s
@@ -24,3 +22,11 @@ $ trec -l
 test1 OK 0:01:15
 test2 NG 0:10:44
 ```
+
+## Mode
+
+| Mode | Mode (Alt.) | Manual |
+| ---- | ----------- | ------ |
+| -r | --recoding | [manual/recording.txt](manual/recording.txt) |
+| -l | --lookup | [manual/lookup.txt](manual/lookup.txt) |
+| -d | --delete | [manual/delete.txt](manual/delete.txt) |

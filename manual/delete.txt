@@ -1,0 +1,5 @@
+USEAGE: trec -d id
+  Delete record.
+
+Options:
+  id : Target record id.

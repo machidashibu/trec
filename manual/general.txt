@@ -1,0 +1,6 @@
+USEAGE: trec [mode] [options]
+Mode:
+  -r --recording : Start recording with label. (default)
+  -l --lookup    : Lookup recorded information by the label or the pattern or date.
+  -d --delete    : Delete record by ID.
+  -h --help      : Show help

@@ -1,0 +1,6 @@
+USEAGE: trec label
+  Records time duration with the label and the memo.
+  Stop recording when input CTRL+C.
+
+Options:
+  label : Label of record.

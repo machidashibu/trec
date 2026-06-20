@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	_ "embed"
 	"fmt"
 	"log/slog"
 	"os"
@@ -15,12 +14,18 @@ import (
 	"trec/internal/infra"
 	"trec/internal/infra/database"
 	"trec/internal/usecase"
+	"trec/manual"
 )
 
 const configPath = "trec.yaml"
 
-//go:embed manual.txt
-var helpText string
+func exit(err error) int {
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+		return 1
+	}
+	return 0
+}
 
 func main() {
 	os.Exit(run())
@@ -61,13 +66,15 @@ func run() int {
 	inputter := infra.NewConsoleReader()
 	printer := infra.NewConsolePrinter()
 
+	man := manual.NewManual(printer)
+
 	// run application
 	switch mode {
 	case model.ModeRecording:
 		// parse options
 		testname, opts, err := controller.ParseRecordingOptions(args, &config.Recording)
 		if err != nil {
-			return manual()
+			return man.Show(mode)
 		}
 		// prepare recording
 		ticker := infra.NewTicker(opts.Interval())
@@ -85,7 +92,7 @@ func run() int {
 		// parse options
 		opts, err := controller.ParseLookupOptions(args, &config.Lookup)
 		if err != nil {
-			return manual()
+			return man.Show(mode)
 		}
 		// prepare lookup
 		formatter := presenter.NewLookupFormatter(opts.Format(), opts.TimeFormat())
@@ -99,7 +106,7 @@ func run() int {
 		// parse options
 		id, err := controller.ParseDeleteOptions(args, config)
 		if err != nil {
-			return manual()
+			return man.Show(mode)
 		}
 		// prepare delete
 		reporter := presenter.NewDeleteReporter(printer)
@@ -109,23 +116,14 @@ func run() int {
 			return exit(err)
 		}
 	case model.ModeHelp:
-		return manual()
+		if len(args) > 0 {
+			return man.Show(controller.MapToMode(args[0]))
+		} else {
+			return man.Show(model.ModeHelp)
+		}
 	default:
-		return exit(fmt.Errorf("invalid mode: %s", mode))
+		return man.Show(model.ModeUnknown)
 	}
 
 	return 0
-}
-
-func exit(err error) int {
-	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-		return 1
-	}
-	return 0
-}
-
-func manual() int {
-	fmt.Println(helpText)
-	return 2
 }
