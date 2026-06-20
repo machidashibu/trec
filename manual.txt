@@ -2,6 +2,7 @@ USEAGE: trec [mode] [options]
 Mode:
   -r --recording : Start recording with label. (default)
   -l --lookup    : Lookup recorded information by the label or the pattern or date.
+  -d --delete    : Delete record by ID.
   -h --help      : Show help
 
 USEAGE: trec label
@@ -19,3 +20,8 @@ Options:
   --today         : Filter by today.
   --all-days      : No filtering by start_time.
   --latest-only   : Keep only the latest record for each unique label.
+
+USEAGE: trec -d id
+  Delete record.
+Options:
+  id : Target record id.

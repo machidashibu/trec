@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
+	"trec/internal/adapter/controller"
 	"trec/internal/adapter/presenter"
 	"trec/internal/adapter/repository"
 	"trec/internal/core"
@@ -38,10 +39,8 @@ func run() int {
 		return exit(err)
 	}
 
-	// parse and overwrite configuration by command line arguments
-	if err := config.ParseArgs(os.Args[1:]); err != nil {
-		return exit(err)
-	}
+	// parse command line arguments (Get mode and remaining arguments for options)
+	mode, args := controller.ParseArgs(os.Args[1:])
 
 	// create application context
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
@@ -53,7 +52,7 @@ func run() int {
 		return exit(err)
 	}
 	factory := repository.NewFactory(db)
-	repoRecord, err := factory.CreateTestResultRepository()
+	repoTestResult, err := factory.CreateTestResultRepository()
 	if err != nil {
 		return exit(err)
 	}
@@ -63,35 +62,54 @@ func run() int {
 	printer := infra.NewConsolePrinter()
 
 	// run application
-	switch config.AppMode() {
+	switch mode {
 	case core.ModeRecording:
+		// parse options
+		testname, opts, err := controller.ParseRecordingOptions(args, &config.Recording)
+		if err != nil {
+			return manual()
+		}
 		// prepare recording
-		formatter := presenter.NewDurationFormatter(config.RecordingTimeformat())
-		ticker := infra.NewTicker(config.Interval())
+		formatter := presenter.NewDurationFormatter(opts.TimeFormat())
+		ticker := infra.NewTicker(opts.Interval())
 		// Start recording
 		go ticker.Start(ctx)
-		uc := usecase.NewRecording(repoRecord, ticker, inputter, printer, formatter)
-		if err := uc.Recording(ctx, config.Testname()); err != nil {
+		uc := usecase.NewRecording(repoTestResult, ticker, inputter, printer, formatter)
+		if err := uc.Recording(ctx, testname); err != nil {
 			return exit(err)
 		}
+		// wait termination signal
+		<-ctx.Done()
 	case core.ModeLookup:
+		// parse options
+		opts, err := controller.ParseLookupOptions(args, &config.Lookup)
+		if err != nil {
+			return manual()
+		}
 		// prepare lookup
-		formatter := presenter.NewLookupFormatter(config.LookupFormat(), config.LookupTimeFormat())
+		formatter := presenter.NewLookupFormatter(opts.Format(), opts.TimeFormat())
 		reporter := presenter.NewLookupReporter(printer, formatter)
 		// Lookup records
-		uc := usecase.NewLookup(repoRecord, reporter)
-		if err := uc.Lookup(config); err != nil {
+		uc := usecase.NewLookup(repoTestResult, reporter)
+		if err := uc.Lookup(ctx, opts); err != nil {
 			return exit(err)
 		}
-		cancel() // normal terminate
+	case core.ModeDelete:
+		// parse options
+		id, err := controller.ParseDeleteOptions(args, config)
+		if err != nil {
+			return manual()
+		}
+		// Delete record
+		uc := usecase.NewDelete(repoTestResult)
+		if err := uc.Delete(ctx, id); err != nil {
+			return exit(err)
+		}
 	case core.ModeHelp:
 		return manual()
 	default:
-		return exit(fmt.Errorf("invalid mode: %s", config.AppMode()))
+		return exit(fmt.Errorf("invalid mode: %s", mode))
 	}
-
-	// wait termination signal
-	<-ctx.Done()
 
 	return 0
 }

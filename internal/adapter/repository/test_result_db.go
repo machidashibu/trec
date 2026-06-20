@@ -43,16 +43,9 @@ func (d *TestResultDatabase) Add(name string, start time.Time, end time.Time, re
 }
 
 func (d *TestResultDatabase) GetAll(filter domain.Filter) (domain.TestList, error) {
-	slog.Debug("Called RecordsDatabase.GetAll", "filter", filter)
+	slog.Debug("Called TestResultDatabase.GetAll", "filter", filter)
 
 	db := d.infra.DB()
-	// set order
-	// if strings.HasPrefix(string(order), string(domain.OrderByDuration)) {
-	// 	db = db.Order("julianday(end_time) - julianday(start_time) ASC")
-	// } else {
-	// 	db = db.Order(order)
-	// }
-
 	// set filter
 	if filter.Today() {
 		now := time.Now()
@@ -72,6 +65,13 @@ func (d *TestResultDatabase) GetAll(filter domain.Filter) (domain.TestList, erro
 		)
 	}
 
+	// set order
+	// if strings.HasPrefix(string(order), string(domain.OrderByDuration)) {
+	// 	db = db.Order("julianday(end_time) - julianday(start_time) ASC")
+	// } else {
+	// 	db = db.Order(order)
+	// }
+
 	// get records
 	var records []TestResultSchema
 	if err := db.Find(&records).Error; err != nil {
@@ -80,4 +80,10 @@ func (d *TestResultDatabase) GetAll(filter domain.Filter) (domain.TestList, erro
 	slog.Debug("Get all records", "len", len(records))
 
 	return toRecordList(records), nil
+}
+
+func (db *TestResultDatabase) Delete(id domain.RecordId) error {
+	slog.Debug("Called TestResultDatabase.Delete", "id", id)
+
+	return db.infra.DB().Where("id = ?", id).Delete(TestResultSchema{}).Error
 }

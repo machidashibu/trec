@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"context"
 	"log/slog"
 	"trec/internal/core/logger"
 	"trec/internal/domain"
@@ -15,8 +16,8 @@ type lookupReporter interface {
 }
 
 type lookupOptions interface {
-	LookupOrder() domain.OrderBy
-	LookupFilter() domain.Filter
+	// LookupOrder() domain.OrderBy
+	Filter() domain.Filter
 }
 
 type Lookup struct {
@@ -31,13 +32,13 @@ func NewLookup(repo lookupRepository, reporter lookupReporter) *Lookup {
 	}
 }
 
-func (uc *Lookup) Lookup(opts lookupOptions) error {
+func (uc *Lookup) Lookup(_ context.Context, opts lookupOptions) error {
 	slog.Debug("Execute lookup")
 
 	// get all items
-	list, err := uc.repo.GetAll(opts.LookupFilter())
+	list, err := uc.repo.GetAll(opts.Filter())
 	if err != nil {
-		return logger.Error("Lookup", "get all error", err)
+		return logger.Error("Lookup", "get all error", err, "filter", opts.Filter())
 	}
 	slog.Debug("Get all records", "len", list.Count())
 
