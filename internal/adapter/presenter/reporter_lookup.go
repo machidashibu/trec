@@ -6,7 +6,7 @@ import (
 )
 
 type lookupFormatter interface {
-	String(id uint64, record domain.Record) string
+	String(id domain.RecordId, record domain.Test) string
 }
 
 type LookupReporter struct {
@@ -21,10 +21,10 @@ func NewLookupReporter(printer reportPrinter, formatter lookupFormatter) *Lookup
 	}
 }
 
-func (r LookupReporter) Report(list domain.RecordList) {
+func (r LookupReporter) Report(list domain.TestList) {
 	for index := 0; index < list.Count(); index++ {
-		id, record := list.Get(index)
-		r.printer.Print(r.formatter.String(id, record))
+		test, id := list.Get(index)
+		r.printer.Print(r.formatter.String(id, test))
 	}
 	r.printer.Print(fmt.Sprintf("%d items", list.Count()))
 }

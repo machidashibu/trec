@@ -14,35 +14,35 @@ type infraDB interface {
 	DB() *gorm.DB
 }
 
-type RecordsDatabase struct {
+type TestResultDatabase struct {
 	infra infraDB
 }
 
 // NOE: It can not create an instance from external. (Should be created by factory)
-func newRecordsDatabase(infra infraDB) *RecordsDatabase {
-	return &RecordsDatabase{infra: infra}
+func newTestResultDatabase(infra infraDB) *TestResultDatabase {
+	return &TestResultDatabase{infra: infra}
 }
 
-func (d *RecordsDatabase) ensureTable() error {
-	if err := d.infra.DB().AutoMigrate(&RecordsSchema{}); err != nil {
+func (d *TestResultDatabase) ensureTable() error {
+	if err := d.infra.DB().AutoMigrate(&TestResultSchema{}); err != nil {
 		return logger.Error("RecordsDatabase", "auto-migrate error", err)
 	}
 	return nil
 }
 
-func (d *RecordsDatabase) Add(label string, start time.Time, end time.Time, memo string) (domain.Record, error) {
-	slog.Debug("Called RecordsDatabase.Add", "label", label, "start", start, "end", end, "memo", memo)
-	record := newRecord(label, start, end, memo)
+func (d *TestResultDatabase) Add(name string, start time.Time, end time.Time, result string) (domain.Test, error) {
+	slog.Debug("Called RecordsDatabase.Add", "name", name, "start", start, "end", end, "result", result)
+	record := newRecord(name, start, end, result)
 
 	if err := d.infra.DB().Create(record).Error; err != nil {
 		return nil, logger.Error("RecordsDatabase", "create error", err, "record", record)
 	}
 	slog.Debug("Created record", "record", record)
 
-	return model.NewRecord(record.Label, record.StartTime, record.EndTime, record.Note), nil
+	return model.NewRecord(record.Name, record.StartTime, record.EndTime, record.Result), nil
 }
 
-func (d *RecordsDatabase) GetAll(filter domain.Filter) (domain.RecordList, error) {
+func (d *TestResultDatabase) GetAll(filter domain.Filter) (domain.TestList, error) {
 	slog.Debug("Called RecordsDatabase.GetAll", "filter", filter)
 
 	db := d.infra.DB()
@@ -61,19 +61,19 @@ func (d *RecordsDatabase) GetAll(filter domain.Filter) (domain.RecordList, error
 		db = db.Where("start_time >= ? AND start_time < ?", startOfDay, endOfDay)
 	}
 	if filter.LatestOnly() {
-		// keep only the latest record for each unique label
-		sub := d.infra.DB().Model(&RecordsSchema{}).
-			Select("label, MAX(start_time) AS max_start_time").
-			Group("label")
+		// keep only the latest record for each unique name
+		sub := d.infra.DB().Model(&TestResultSchema{}).
+			Select("name, MAX(start_time) AS max_start_time").
+			Group("name")
 
 		db = db.Joins(
-			"JOIN (?) AS latest ON records.label = latest.label AND records.start_time = latest.max_start_time",
+			"JOIN (?) AS latest ON test_result.name = latest.name AND test_result.start_time = latest.max_start_time",
 			sub,
 		)
 	}
 
 	// get records
-	var records []RecordsSchema
+	var records []TestResultSchema
 	if err := db.Find(&records).Error; err != nil {
 		return nil, logger.Error("RecordsDatabase", "find error", err)
 	}

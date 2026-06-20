@@ -18,20 +18,19 @@ func NewLookupFormatter(format, timeFormat string) *LookupFormatter {
 	}
 }
 
-func (f LookupFormatter) String(id uint64, record domain.Record) string {
-	d := record.EndTime().Sub(record.StartTime())
+func (f LookupFormatter) String(id domain.RecordId, test domain.Test) string {
 	switch f.format {
 	case "full":
 		return fmt.Sprintf("[%d] %s %s %s %s %s",
 			id,
-			record.Label(),
-			record.Note(),
-			record.StartTime().Format(time.DateTime),
-			record.EndTime().Format(time.DateTime),
-			f.timeFormat.String(d),
+			test.Name(),
+			test.Result(),
+			test.StartTime().Format(time.DateTime),
+			test.EndTime().Format(time.DateTime),
+			f.timeFormat.String(test.Duration()),
 		)
 	// case "simple":
 	default:
-		return fmt.Sprintf("%s %s %s", record.Label(), record.Note(), f.timeFormat.String(d))
+		return fmt.Sprintf("%s %s %s", test.Name(), test.Result(), f.timeFormat.String(test.Duration()))
 	}
 }

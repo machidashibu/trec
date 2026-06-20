@@ -6,27 +6,30 @@ import (
 )
 
 var (
-	ErrorInvalidConfig       = errors.New("invalid config")
-	ErrorInvalidLabelPattern = errors.New("invalid label pattern")
+	ErrorInvalidConfig          = errors.New("invalid config")
+	ErrorInvalidTestNamePattern = errors.New("invalid testname pattern")
 )
 
-type Record interface {
-	Label() string
+type Test interface {
+	Name() string
 	StartTime() time.Time
 	EndTime() time.Time
-	Note() string
+	Result() string
+	Duration() time.Duration
 }
 
-type RecordList interface {
+type TestList interface {
 	Count() int
-	Get(index int) (uint64, Record)
+	Get(index int) (Test, RecordId)
 }
+
+type RecordId uint64
 
 type OrderBy string
 
 const (
 	OrderByID       OrderBy = "id"
-	OrderByLabel    OrderBy = "label"
+	OrderByName     OrderBy = "name"
 	OrderByStart    OrderBy = "start_time"
 	OrderByEnd      OrderBy = "end_time"
 	OrderByNote     OrderBy = "note"

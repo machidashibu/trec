@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-type RecordRepository interface {
-	Add(label string, start time.Time, end time.Time, memo string) (Record, error)
-	GetAll(filter Filter) (RecordList, error)
+type TestResultRepository interface {
+	Add(name string, start time.Time, end time.Time, memo string) (Test, error)
+	GetAll(filter Filter) (TestList, error)
 }

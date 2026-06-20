@@ -30,7 +30,7 @@ type Config struct {
 }
 
 type RecordingConfig struct {
-	DefaultLabel      string `yaml:"label"`
+	DefaultTestname   string `yaml:"testname"`
 	ValidationPattern string `yaml:"validation"`
 	DefaultTimeformat string `yaml:"time_format"`
 }
@@ -43,8 +43,8 @@ type LookupConfig struct {
 }
 
 type LookupFilterConfig struct {
-	StartTimeToday     bool `yaml:"today"`
-	LatestOnlyPerLabel bool `yaml:"latest_only"`
+	StartTimeToday        bool `yaml:"today"`
+	LatestOnlyPerTestname bool `yaml:"latest_only"`
 }
 
 func (c *Config) Read(path string) error {
@@ -96,7 +96,7 @@ func (c *Config) ParseLookupOptions(args []string) error {
 	if slices.Contains(args, "--no-filter") {
 		// clear all filter
 		c.Lookup.DefaultFilter.StartTimeToday = false
-		c.Lookup.DefaultFilter.LatestOnlyPerLabel = false
+		c.Lookup.DefaultFilter.LatestOnlyPerTestname = false
 	} else {
 		// parse filter options
 		if slices.Contains(args, "--all-days") {
@@ -105,7 +105,7 @@ func (c *Config) ParseLookupOptions(args []string) error {
 			c.Lookup.DefaultFilter.StartTimeToday = true
 		}
 		if slices.Contains(args, "--latest-only") {
-			c.Lookup.DefaultFilter.LatestOnlyPerLabel = true
+			c.Lookup.DefaultFilter.LatestOnlyPerTestname = true
 		}
 	}
 	return nil
@@ -115,14 +115,14 @@ func (c *Config) ParseRecordingOptions(args []string) error {
 	if len(args) < 1 {
 		return domain.ErrorInvalidConfig
 	}
-	c.Recording.DefaultLabel = args[0]
+	c.Recording.DefaultTestname = args[0]
 	if c.Recording.ValidationPattern != "" {
-		matched, err := regexp.MatchString(c.Recording.ValidationPattern, c.Recording.DefaultLabel)
+		matched, err := regexp.MatchString(c.Recording.ValidationPattern, c.Recording.DefaultTestname)
 		if err != nil {
-			return logger.Error("Config", "label validattion pattern error", err, "pattern", c.Recording.ValidationPattern, "label", c.Recording.DefaultLabel)
+			return logger.Error("Config", "testname validattion pattern error", err, "pattern", c.Recording.ValidationPattern, "testname", c.Recording.DefaultTestname)
 		}
 		if !matched {
-			return logger.Error("config", "label validation error", domain.ErrorInvalidLabelPattern, "pattern", c.Recording.ValidationPattern, "label", c.Recording.DefaultLabel)
+			return logger.Error("config", "testname validation error", domain.ErrorInvalidTestNamePattern, "pattern", c.Recording.ValidationPattern, "testname", c.Recording.DefaultTestname)
 		}
 	}
 	return nil
@@ -152,8 +152,8 @@ func (c Config) AppMode() Mode {
 	return c.Mode
 }
 
-func (c Config) Label() string {
-	return c.Recording.DefaultLabel
+func (c Config) Testname() string {
+	return c.Recording.DefaultTestname
 }
 
 func (c Config) RecordingTimeformat() string {
@@ -185,5 +185,5 @@ func (c LookupFilterConfig) Today() bool {
 }
 
 func (c LookupFilterConfig) LatestOnly() bool {
-	return c.LatestOnlyPerLabel
+	return c.LatestOnlyPerTestname
 }

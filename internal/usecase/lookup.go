@@ -7,11 +7,11 @@ import (
 )
 
 type lookupRepository interface {
-	GetAll(filter domain.Filter) (domain.RecordList, error)
+	GetAll(filter domain.Filter) (domain.TestList, error)
 }
 
 type lookupReporter interface {
-	Report(list domain.RecordList)
+	Report(list domain.TestList)
 }
 
 type lookupOptions interface {

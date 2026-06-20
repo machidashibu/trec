@@ -10,8 +10,8 @@ func NewFactory(infra infraDB) *Factory {
 	return &Factory{infra: infra}
 }
 
-func (f *Factory) CreateRecordRepository() (domain.RecordRepository, error) {
-	db := newRecordsDatabase(f.infra)
+func (f *Factory) CreateTestResultRepository() (domain.TestResultRepository, error) {
+	db := newTestResultDatabase(f.infra)
 	if err := db.ensureTable(); err != nil {
 		return nil, err
 	}

@@ -53,7 +53,7 @@ func run() int {
 		return exit(err)
 	}
 	factory := repository.NewFactory(db)
-	repoRecord, err := factory.CreateRecordRepository()
+	repoRecord, err := factory.CreateTestResultRepository()
 	if err != nil {
 		return exit(err)
 	}
@@ -71,7 +71,7 @@ func run() int {
 		// Start recording
 		go ticker.Start(ctx)
 		uc := usecase.NewRecording(repoRecord, ticker, inputter, printer, formatter)
-		if err := uc.Recording(ctx, config.Label()); err != nil {
+		if err := uc.Recording(ctx, config.Testname()); err != nil {
 			return exit(err)
 		}
 	case core.ModeLookup:

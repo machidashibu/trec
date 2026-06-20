@@ -28,14 +28,14 @@ type recordingTimeFormatter interface {
 }
 
 type Recording struct {
-	repo      domain.RecordRepository
+	repo      domain.TestResultRepository
 	ticker    recordingTicker
 	inputter  recordingInput
 	printer   recordingPrinter
 	formatter recordingTimeFormatter
 }
 
-func NewRecording(repo domain.RecordRepository, ticker recordingTicker, inputter recordingInput, printer recordingPrinter, formatter recordingTimeFormatter) *Recording {
+func NewRecording(repo domain.TestResultRepository, ticker recordingTicker, inputter recordingInput, printer recordingPrinter, formatter recordingTimeFormatter) *Recording {
 	return &Recording{
 		repo:      repo,
 		ticker:    ticker,
@@ -45,7 +45,7 @@ func NewRecording(repo domain.RecordRepository, ticker recordingTicker, inputter
 	}
 }
 
-func (uc *Recording) Recording(ctx context.Context, label string) error {
+func (uc *Recording) Recording(ctx context.Context, testname string) error {
 	slog.Debug("Execute Recording")
 
 	// start recording
@@ -57,20 +57,20 @@ func (uc *Recording) Recording(ctx context.Context, label string) error {
 			// stop
 			stop := time.Now()
 			uc.printer.Print("")
-			slog.Debug("Stop recording", "label", label, "start", start, "stop", stop)
+			slog.Debug("Stop recording", "testname", testname, "start", start, "stop", stop)
 
 			// input memo
-			memo, err := uc.inputter.Get("Input memo: ")
+			result, err := uc.inputter.Get("Input result: ")
 			if err != nil {
-				logger.Error("Recording", "input memo error", err)
-				memo = ""
+				logger.Error("Recording", "input result error", err)
+				result = ""
 			}
-			slog.Debug("Inputted memo", "memo", memo)
+			slog.Debug("Inputted result", "result", result)
 
 			// add to DB
-			record, err := uc.repo.Add(label, start, stop, memo)
+			record, err := uc.repo.Add(testname, start, stop, result)
 			if err != nil {
-				return logger.Error("Recording", "Failed to add record", err, "label", label, "start", start, "stop", stop, "memo", memo)
+				return logger.Error("Recording", "Failed to add record", err, "testname", testname, "start", start, "stop", stop, "result", result)
 			}
 			slog.Debug("Recorded to DB", "record", record)
 
