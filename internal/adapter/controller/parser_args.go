@@ -1,28 +1,28 @@
 package controller
 
-import "trec/internal/core"
+import "trec/internal/adapter/model"
 
-func ParseArgs(args []string) (core.Mode, []string) {
+func ParseArgs(args []string) (model.Mode, []string) {
 	if len(args) == 0 {
-		return core.ModeRecording, args // default: recoding mode
+		return model.ModeRecording, args // default: recoding mode
 	}
 
 	// parse mode
 	switch args[0] {
 	case "-l", "--lookup":
-		return core.ModeLookup, args[1:]
+		return model.ModeLookup, args[1:]
 	case "-d", "--delete":
-		return core.ModeDelete, args[1:]
+		return model.ModeDelete, args[1:]
 	case "-h", "--help":
-		return core.ModeHelp, args[1:]
+		return model.ModeHelp, args[1:]
 	// case "-r", "--recording":
 	default: // default: recoding mode
 		if args[0] == "-r" || args[0] == "--recording" {
 			// specified mode
-			return core.ModeRecording, args[1:]
+			return model.ModeRecording, args[1:]
 		} else {
 			// not specified mode
-			return core.ModeRecording, args
+			return model.ModeRecording, args
 		}
 	}
 }

@@ -3,12 +3,12 @@ package controller
 import (
 	"regexp"
 	"trec/internal/adapter/model"
-	"trec/internal/core"
+	"trec/internal/adapter/repository"
 	"trec/internal/core/logger"
 	"trec/internal/domain"
 )
 
-func ParseRecordingOptions(args []string, config *core.RecordingConfig) (string, *model.RecordingOptions, error) {
+func ParseRecordingOptions(args []string, config *repository.RecordingConfig) (string, *model.RecordingOptions, error) {
 	if len(args) != 1 {
 		return "", nil, domain.ErrorInvalidConfig
 	}

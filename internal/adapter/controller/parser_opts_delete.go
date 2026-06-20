@@ -2,12 +2,12 @@ package controller
 
 import (
 	"strconv"
-	"trec/internal/core"
+	"trec/internal/adapter/repository"
 	"trec/internal/core/logger"
 	"trec/internal/domain"
 )
 
-func ParseDeleteOptions(args []string, config *core.Config) (domain.RecordId, error) {
+func ParseDeleteOptions(args []string, config *repository.Config) (domain.RecordId, error) {
 	if len(args) != 1 {
 		return 0, domain.ErrorInvalidConfig
 	}

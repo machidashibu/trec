@@ -1,28 +1,20 @@
-package core
+package repository
 
 import (
 	"log/slog"
-	"os"
 	"trec/internal/domain"
-
-	yaml "gopkg.in/yaml.v3"
 )
 
-type Mode string
-
-const (
-	ModeRecording Mode = "recording"
-	ModeLookup    Mode = "lookup"
-	ModeDelete    Mode = "delete"
-	ModeHelp      Mode = "help"
-	ModeUnknown   Mode = "unknown"
-)
-
-// Config holds the application configuration settings.
-// It is a stub code.
 type Config struct {
+	Log       LogConfig       `yaml:"yaml:"log""`
 	Recording RecordingConfig `yaml:"recording"`
 	Lookup    LookupConfig    `yaml:"lookup"`
+}
+
+type LogConfig struct {
+	Path      string     `yaml:"path"`
+	Level     slog.Level `yaml:"level"`
+	Overwrite bool       `yaml:"overwrite"`
 }
 
 type RecordingConfig struct {
@@ -41,29 +33,4 @@ type LookupConfig struct {
 type LookupFilterConfig struct {
 	StartTimeToday        bool `yaml:"today"`
 	LatestOnlyPerTestname bool `yaml:"latest_only"`
-}
-
-func (c *Config) Read(path string) error {
-	f, err := os.ReadFile(path)
-	if err != nil {
-		return err
-	}
-
-	return yaml.Unmarshal(f, &c)
-}
-
-func (c Config) LogPath() string {
-	return "trec.log"
-}
-
-func (c Config) LogLevel() slog.Level {
-	return slog.LevelDebug
-}
-
-func (c Config) LogIsOverwrite() bool {
-	return true
-}
-
-func (c Config) DBPath() string {
-	return "trec.db"
 }

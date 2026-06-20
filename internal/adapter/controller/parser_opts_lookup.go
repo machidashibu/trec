@@ -3,10 +3,10 @@ package controller
 import (
 	"slices"
 	"trec/internal/adapter/model"
-	"trec/internal/core"
+	"trec/internal/adapter/repository"
 )
 
-func ParseLookupOptions(args []string, config *core.LookupConfig) (*model.LookupOptions, error) {
+func ParseLookupOptions(args []string, config *repository.LookupConfig) (*model.LookupOptions, error) {
 	// get format
 	format := "simple"
 	if config.DefaultFormat != "" {

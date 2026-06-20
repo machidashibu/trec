@@ -8,9 +8,9 @@ import (
 	"os"
 	"os/signal"
 	"trec/internal/adapter/controller"
+	"trec/internal/adapter/model"
 	"trec/internal/adapter/presenter"
 	"trec/internal/adapter/repository"
-	"trec/internal/core"
 	"trec/internal/core/logger"
 	"trec/internal/infra"
 	"trec/internal/infra/database"
@@ -28,7 +28,7 @@ func main() {
 
 func run() int {
 	// load config
-	config := new(core.Config)
+	config := new(repository.Config)
 	if err := config.Read(configPath); err != nil {
 		// used default setting if file is not exists. (do not exit)
 		slog.Error("config read error", "path", configPath)
@@ -63,7 +63,7 @@ func run() int {
 
 	// run application
 	switch mode {
-	case core.ModeRecording:
+	case model.ModeRecording:
 		// parse options
 		testname, opts, err := controller.ParseRecordingOptions(args, &config.Recording)
 		if err != nil {
@@ -81,7 +81,7 @@ func run() int {
 		}
 		// wait termination signal
 		<-ctx.Done()
-	case core.ModeLookup:
+	case model.ModeLookup:
 		// parse options
 		opts, err := controller.ParseLookupOptions(args, &config.Lookup)
 		if err != nil {
@@ -95,7 +95,7 @@ func run() int {
 		if err := uc.Lookup(ctx, opts); err != nil {
 			return exit(err)
 		}
-	case core.ModeDelete:
+	case model.ModeDelete:
 		// parse options
 		id, err := controller.ParseDeleteOptions(args, config)
 		if err != nil {
@@ -108,7 +108,7 @@ func run() int {
 		if err := uc.Delete(ctx, id); err != nil {
 			return exit(err)
 		}
-	case core.ModeHelp:
+	case model.ModeHelp:
 		return manual()
 	default:
 		return exit(fmt.Errorf("invalid mode: %s", mode))
