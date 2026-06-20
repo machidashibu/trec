@@ -5,26 +5,30 @@ import (
 	"trec/internal/domain"
 )
 
+type lookupOutput interface {
+	Print(text string)
+}
+
 type lookupFormatter interface {
 	String(id domain.RecordId, record domain.Test) string
 }
 
 type LookupReporter struct {
-	printer   reportPrinter
-	formatter lookupFormatter
+	out    lookupOutput
+	format lookupFormatter
 }
 
-func NewLookupReporter(printer reportPrinter, formatter lookupFormatter) *LookupReporter {
+func NewLookupReporter(out lookupOutput, format lookupFormatter) *LookupReporter {
 	return &LookupReporter{
-		printer:   printer,
-		formatter: formatter,
+		out:    out,
+		format: format,
 	}
 }
 
 func (r LookupReporter) Report(list domain.TestList) {
 	for index := 0; index < list.Count(); index++ {
 		test, id := list.Get(index)
-		r.printer.Print(r.formatter.String(id, test))
+		r.out.Print(r.format.String(id, test))
 	}
-	r.printer.Print(fmt.Sprintf("%d items", list.Count()))
+	r.out.Print(fmt.Sprintf("%d items", list.Count()))
 }

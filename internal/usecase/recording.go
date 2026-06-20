@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"time"
 	"trec/internal/core/logger"
@@ -18,30 +17,26 @@ type recordingInput interface {
 	Get(prompt string) (string, error)
 }
 
-type recordingPrinter interface {
-	PrintLine(text string)
-	Print(text string)
-}
-
-type recordingTimeFormatter interface {
-	String(d time.Duration) string
+type recordingReporter interface {
+	Start()
+	Stop()
+	Ticked(d time.Duration)
+	Completed()
 }
 
 type Recording struct {
-	repo      domain.TestResultRepository
-	ticker    recordingTicker
-	inputter  recordingInput
-	printer   recordingPrinter
-	formatter recordingTimeFormatter
+	repo     domain.TestResultRepository
+	ticker   recordingTicker
+	in       recordingInput
+	reporter recordingReporter
 }
 
-func NewRecording(repo domain.TestResultRepository, ticker recordingTicker, inputter recordingInput, printer recordingPrinter, formatter recordingTimeFormatter) *Recording {
+func NewRecording(repo domain.TestResultRepository, ticker recordingTicker, in recordingInput, reporter recordingReporter) *Recording {
 	return &Recording{
-		repo:      repo,
-		ticker:    ticker,
-		inputter:  inputter,
-		printer:   printer,
-		formatter: formatter,
+		repo:     repo,
+		ticker:   ticker,
+		in:       in,
+		reporter: reporter,
 	}
 }
 
@@ -50,17 +45,17 @@ func (uc *Recording) Recording(ctx context.Context, testname string) error {
 
 	// start recording
 	start := time.Now()
-	uc.printer.PrintLine(fmt.Sprintf("Recording... %s", uc.formatter.String(0)))
+	uc.reporter.Start()
 	for {
 		select {
 		case <-ctx.Done():
 			// stop
 			stop := time.Now()
-			uc.printer.Print("")
+			uc.reporter.Stop()
 			slog.Debug("Stop recording", "testname", testname, "start", start, "stop", stop)
 
 			// input memo
-			result, err := uc.inputter.Get("Input result: ")
+			result, err := uc.in.Get("Input result: ")
 			if err != nil {
 				logger.Error("Recording", "input result error", err)
 				result = ""
@@ -74,12 +69,11 @@ func (uc *Recording) Recording(ctx context.Context, testname string) error {
 			}
 			slog.Debug("Recorded to DB", "record", record)
 
-			uc.printer.Print("Recorded.")
-
+			uc.reporter.Completed()
 			slog.Debug("Finished Recording")
 			return nil
 		case <-uc.ticker.Tick():
-			uc.printer.PrintLine(fmt.Sprintf("Recording... %s", uc.formatter.String(time.Since(start).Truncate(time.Second))))
+			uc.reporter.Ticked(time.Since(start).Truncate(time.Second))
 		}
 	}
 }

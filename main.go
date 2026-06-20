@@ -70,11 +70,12 @@ func run() int {
 			return manual()
 		}
 		// prepare recording
-		formatter := presenter.NewDurationFormatter(opts.TimeFormat())
 		ticker := infra.NewTicker(opts.Interval())
+		formatter := presenter.NewDurationFormatter(opts.TimeFormat())
+		reporter := presenter.NewRecordingReporter(printer, formatter)
 		// Start recording
 		go ticker.Start(ctx)
-		uc := usecase.NewRecording(repoTestResult, ticker, inputter, printer, formatter)
+		uc := usecase.NewRecording(repoTestResult, ticker, inputter, reporter)
 		if err := uc.Recording(ctx, testname); err != nil {
 			return exit(err)
 		}
@@ -100,8 +101,10 @@ func run() int {
 		if err != nil {
 			return manual()
 		}
+		// prepare delete
+		reporter := presenter.NewDeleteReporter(printer)
 		// Delete record
-		uc := usecase.NewDelete(repoTestResult)
+		uc := usecase.NewDelete(repoTestResult, reporter)
 		if err := uc.Delete(ctx, id); err != nil {
 			return exit(err)
 		}

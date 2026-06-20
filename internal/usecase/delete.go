@@ -11,13 +11,19 @@ type deletErepository interface {
 	Delete(id domain.RecordId) error
 }
 
-type Delete struct {
-	repo deletErepository
+type deleteReporter interface {
+	Report(id domain.RecordId)
 }
 
-func NewDelete(repo deletErepository) *Delete {
+type Delete struct {
+	repo     deletErepository
+	reporter deleteReporter
+}
+
+func NewDelete(repo deletErepository, reporter deleteReporter) *Delete {
 	return &Delete{
-		repo: repo,
+		repo:     repo,
+		reporter: reporter,
 	}
 }
 
@@ -27,7 +33,8 @@ func (uc *Delete) Delete(_ context.Context, id domain.RecordId) error {
 	if err := uc.repo.Delete(id); err != nil {
 		return logger.Error("delete", "delete error", err, "id", id)
 	}
-	slog.Debug("Delete record", "id", id)
+	uc.reporter.Report(id)
+	slog.Debug("Deleted record", "id", id)
 
 	slog.Debug("Finished delete", "id", id)
 	return nil
