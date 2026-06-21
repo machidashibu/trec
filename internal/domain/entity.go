@@ -32,7 +32,7 @@ const (
 	OrderByName     OrderBy = "name"
 	OrderByStart    OrderBy = "start_time"
 	OrderByEnd      OrderBy = "end_time"
-	OrderByNote     OrderBy = "note"
+	OrderByResult   OrderBy = "result"
 	OrderByDuration OrderBy = "duration"
 	OrderByAsc      OrderBy = "ASC"
 	OrderByDesc     OrderBy = "DESC"

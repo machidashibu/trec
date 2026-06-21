@@ -11,6 +11,8 @@ func ParseArgs(args []string) (model.Mode, []string) {
 	switch args[0] {
 	case "-l", "--lookup":
 		return model.ModeLookup, args[1:]
+	case "-e", "--edit":
+		return model.ModeEdit, args[1:]
 	case "-d", "--delete":
 		return model.ModeDelete, args[1:]
 	case "-h", "--help":

@@ -1,0 +1,7 @@
+USEAGE: trec -e id [name=new_value] [result=new_value]
+  Edit record with new_value.
+
+Options:
+  id               : Target record id.
+  name=new_value   : Edit name column in the record by new_value.
+  result=new_value : Edit result column in the record by new_value.

@@ -12,7 +12,7 @@ type Test struct {
 	result    string
 }
 
-func NewRecord(name string, startTime time.Time, endTime time.Time, result string) domain.Test {
+func NewTest(name string, startTime time.Time, endTime time.Time, result string) domain.Test {
 	return Test{
 		name:      name,
 		startTime: startTime,

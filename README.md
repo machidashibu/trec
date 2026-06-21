@@ -25,8 +25,11 @@ test2 NG 0:10:44
 
 ## Mode
 
+Default mode is a recording, i.e. could omit mode from command line argument.
+
 | Mode | Mode (Alt.) | Manual |
 | ---- | ----------- | ------ |
-| -r | --recoding | [manual/recording.txt](manual/recording.txt) |
-| -l | --lookup | [manual/lookup.txt](manual/lookup.txt) |
-| -d | --delete | [manual/delete.txt](manual/delete.txt) |
+| -r   | --recoding  | [manual/recording.txt](manual/recording.txt) |
+| -l   | --lookup    | [manual/lookup.txt](manual/lookup.txt) |
+| -e   | --edit      | [manual/edit.txt](manual/edit.txt) |
+| -d   | --delete    | [manual/delete.txt](manual/delete.txt) |

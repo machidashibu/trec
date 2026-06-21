@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"fmt"
 	"log/slog"
 	"time"
 	"trec/internal/adapter/model"
@@ -30,18 +31,20 @@ func (d *TestResultDatabase) ensureTable() error {
 	return nil
 }
 
+// Add creates new record with name, start time, end time and result, return created item.
 func (d *TestResultDatabase) Add(name string, start time.Time, end time.Time, result string) (domain.Test, error) {
 	slog.Debug("Called RecordsDatabase.Add", "name", name, "start", start, "end", end, "result", result)
-	record := newRecord(name, start, end, result)
 
+	record := newRecord(name, start, end, result)
 	if err := d.infra.DB().Create(record).Error; err != nil {
 		return nil, logger.Error("RecordsDatabase", "create error", err, "record", record)
 	}
 	slog.Debug("Created record", "record", record)
 
-	return model.NewRecord(record.Name, record.StartTime, record.EndTime, record.Result), nil
+	return model.NewTest(record.Name, record.StartTime, record.EndTime, record.Result), nil
 }
 
+// GetAll gets all records with filter.
 func (d *TestResultDatabase) GetAll(filter domain.Filter) (domain.TestList, error) {
 	slog.Debug("Called TestResultDatabase.GetAll", "filter", filter)
 
@@ -59,10 +62,12 @@ func (d *TestResultDatabase) GetAll(filter domain.Filter) (domain.TestList, erro
 			Select("name, MAX(start_time) AS max_start_time").
 			Group("name")
 
-		db = db.Joins(
-			"JOIN (?) AS latest ON test_result.name = latest.name AND test_result.start_time = latest.max_start_time",
-			sub,
+		query := fmt.Sprintf(
+			"JOIN (?) AS latest ON %s.name = latest.name AND %s.start_time = latest.max_start_time",
+			(&TestResultSchema{}).TableName(),
+			(&TestResultSchema{}).TableName(),
 		)
+		db = db.Joins(query, sub)
 	}
 
 	// set order
@@ -75,15 +80,80 @@ func (d *TestResultDatabase) GetAll(filter domain.Filter) (domain.TestList, erro
 	// get records
 	var records []TestResultSchema
 	if err := db.Find(&records).Error; err != nil {
-		return nil, logger.Error("RecordsDatabase", "find error", err)
+		return nil, logger.Error("TestResultDatabase", "find error", err)
 	}
 	slog.Debug("Get all records", "len", len(records))
 
-	return toRecordList(records), nil
+	return toTestList(records), nil
 }
 
-func (db *TestResultDatabase) Delete(id domain.RecordId) error {
+// GetById gets record by id.
+func (d *TestResultDatabase) GetById(id domain.RecordId) (domain.Test, error) {
+	slog.Debug("Called TestResultDatabase.GetById", "id", id)
+
+	var record TestResultSchema
+	if err := d.infra.DB().Where("id = ?", id).First(&record).Error; err != nil {
+		return nil, logger.Error("TestResultDatabase", "first error", err, "id", id)
+	}
+
+	return model.NewTest(record.Name, record.StartTime, record.EndTime, record.Result), nil
+}
+
+// EditName updates columns of name with new value.
+func (d *TestResultDatabase) EditName(id domain.RecordId, name string) error {
+	slog.Debug("Called TestResultDatabase.EditResult", "id", id, "name", name)
+
+	// update name
+	if err := d.infra.DB().Model(&TestResultSchema{}).Where("id = ?", id).Update("name", name).Error; err != nil {
+		return logger.Error("TestResultDatabase", "update error", err, "id", id, "name", name)
+	}
+	slog.Debug("Updated name column value")
+
+	return nil
+}
+
+// EditResult updates columns of result with new value.
+func (d *TestResultDatabase) EditResult(id domain.RecordId, result string) error {
+	slog.Debug("Called TestResultDatabase.EditResult", "id", id, "result", result)
+
+	// update result
+	if err := d.infra.DB().Model(&TestResultSchema{}).Where("id = ?", id).Update("result", result).Error; err != nil {
+		return logger.Error("TestResultDatabase", "update error", err, "id", id, "result", result)
+	}
+	slog.Debug("Updated result column value")
+
+	return nil
+}
+
+// Edit updates columns of name and result with new value.
+// It revert DB if update name or result that is failed.
+func (d *TestResultDatabase) Edit(id domain.RecordId, name, result string) error {
+	slog.Debug("Called TestResultDatabase.EditResult", "id", id, "name", name, "result", result)
+
+	return d.infra.DB().Model(&TestResultSchema{}).Transaction(func(tx *gorm.DB) error {
+		// update name
+		if err := tx.Where("id = ?", id).Update("name", name).Error; err != nil {
+			return logger.Error("TestResultDatabase", "update error", err, "id", id, "name", name)
+		}
+		slog.Debug("Updated name column value")
+		// update result
+		if err := tx.Where("id = ?", id).Update("result", result).Error; err != nil {
+			return logger.Error("TestResultDatabase", "update error", err, "id", id, "result", result)
+		}
+		slog.Debug("Updated result column value")
+		return nil
+	})
+}
+
+// Delete deletes record by ID.
+func (d *TestResultDatabase) Delete(id domain.RecordId) error {
 	slog.Debug("Called TestResultDatabase.Delete", "id", id)
 
-	return db.infra.DB().Where("id = ?", id).Delete(TestResultSchema{}).Error
+	// delete record
+	if err := d.infra.DB().Where("id = ?", id).Delete(TestResultSchema{}).Error; err != nil {
+		return logger.Error("TestResultDatabase", "update error", err, "id", id)
+	}
+	slog.Debug("Deleted record")
+
+	return nil
 }

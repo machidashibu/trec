@@ -66,6 +66,7 @@ func run() int {
 	inputter := infra.NewConsoleReader()
 	printer := infra.NewConsolePrinter()
 
+	// prepare manual
 	man := manual.NewManual(printer)
 
 	// run application
@@ -74,13 +75,14 @@ func run() int {
 		// parse options
 		testname, opts, err := controller.ParseRecordingOptions(args, &config.Recording)
 		if err != nil {
+			slog.Error("parse recording options error", "err", err)
 			return man.Show(mode)
 		}
 		// prepare recording
 		ticker := infra.NewTicker(opts.Interval())
 		formatter := presenter.NewDurationFormatter(opts.TimeFormat())
 		reporter := presenter.NewRecordingReporter(printer, formatter)
-		// Start recording
+		// start recording
 		go ticker.Start(ctx)
 		uc := usecase.NewRecording(repoTestResult, ticker, inputter, reporter)
 		if err := uc.Recording(ctx, testname); err != nil {
@@ -92,25 +94,41 @@ func run() int {
 		// parse options
 		opts, err := controller.ParseLookupOptions(args, &config.Lookup)
 		if err != nil {
+			slog.Error("parse lookup options error", "err", err)
 			return man.Show(mode)
 		}
 		// prepare lookup
 		formatter := presenter.NewLookupFormatter(opts.Format(), opts.TimeFormat())
 		reporter := presenter.NewLookupReporter(printer, formatter)
-		// Lookup records
+		// lookup records
 		uc := usecase.NewLookup(repoTestResult, reporter)
 		if err := uc.Lookup(ctx, opts); err != nil {
+			return exit(err)
+		}
+	case model.ModeEdit:
+		// parse options
+		id, opts, err := controller.ParseEditOptions(args, config)
+		if err != nil {
+			slog.Error("parse edit options error", "err", err)
+			return man.Show(mode)
+		}
+		// prepare edit
+		reporter := presenter.NewEditReporter(printer)
+		// edit record
+		uc := usecase.NewEdit(repoTestResult, reporter)
+		if err := uc.Edit(id, opts); err != nil {
 			return exit(err)
 		}
 	case model.ModeDelete:
 		// parse options
 		id, err := controller.ParseDeleteOptions(args, config)
 		if err != nil {
+			slog.Error("parse delete options error", "err", err)
 			return man.Show(mode)
 		}
 		// prepare delete
 		reporter := presenter.NewDeleteReporter(printer)
-		// Delete record
+		// delete record
 		uc := usecase.NewDelete(repoTestResult, reporter)
 		if err := uc.Delete(ctx, id); err != nil {
 			return exit(err)

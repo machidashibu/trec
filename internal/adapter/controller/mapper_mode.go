@@ -11,6 +11,8 @@ func MapToMode(mode string) model.Mode {
 		return model.ModeRecording
 	case "l", "lookup", "-l", "--lookup":
 		return model.ModeLookup
+	case "e", "edit", "-e", "--edit":
+		return model.ModeEdit
 	case "d", "delete", "-d", "--delete":
 		return model.ModeDelete
 	case "h", "help", "-h", "--help":

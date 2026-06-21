@@ -36,10 +36,10 @@ func fromDomain(record domain.Test) *TestResultSchema {
 	}
 }
 
-func toRecordList(records []TestResultSchema) domain.TestList {
+func toTestList(records []TestResultSchema) domain.TestList {
 	list := model.NewRecordList()
 	for _, record := range records {
-		list.Add(domain.RecordId(record.ID), model.NewRecord(
+		list.Add(domain.RecordId(record.ID), model.NewTest(
 			record.Name,
 			record.StartTime,
 			record.EndTime,

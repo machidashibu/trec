@@ -2,7 +2,6 @@ package manual
 
 import (
 	_ "embed"
-	"fmt"
 	"trec/internal/adapter/model"
 )
 
@@ -14,6 +13,9 @@ var manualRecording string
 
 //go:embed lookup.txt
 var manualLookup string
+
+//go:embed edit.txt
+var manualEdit string
 
 //go:embed delete.txt
 var manualDelete string
@@ -35,6 +37,7 @@ func NewManual(out manualOutput) *Manual {
 		manual: map[model.Mode]string{
 			model.ModeRecording: manualRecording,
 			model.ModeLookup:    manualLookup,
+			model.ModeEdit:      manualEdit,
 			model.ModeDelete:    manualDelete,
 			model.ModeHelp:      manualHelp,
 		},
@@ -44,9 +47,9 @@ func NewManual(out manualOutput) *Manual {
 
 func (m Manual) Show(mode model.Mode) int {
 	if text, ok := m.manual[mode]; ok {
-		fmt.Println(text)
+		m.out.Print(text)
 	} else {
-		fmt.Println(manualGeneral)
+		m.out.Print(manualGeneral)
 	}
 
 	return 2
