@@ -7,43 +7,48 @@ import (
 	"trec/internal/domain"
 )
 
-type lookupRepository interface {
-	GetAll(filter domain.Filter) (domain.TestList, error)
-}
-
-type lookupReporter interface {
-	Report(list domain.TestList)
-}
-
 type lookupOptions interface {
+	Format() domain.LookupFormat
 	// LookupOrder() domain.OrderBy
 	Filter() domain.Filter
 }
 
 type Lookup struct {
-	repo     lookupRepository
-	reporter lookupReporter
+	simple    *LookupSimple
+	full      *LookupFull
+	collapsed *LookupCollapsed
 }
 
-func NewLookup(repo lookupRepository, reporter lookupReporter) *Lookup {
+func NewLookup(simple *LookupSimple, full *LookupFull, collapsed *LookupCollapsed) *Lookup {
 	return &Lookup{
-		repo:     repo,
-		reporter: reporter,
+		simple:    simple,
+		full:      full,
+		collapsed: collapsed,
 	}
 }
 
-func (uc *Lookup) Lookup(_ context.Context, opts lookupOptions) error {
-	slog.Debug("Execute lookup")
+func (uc *Lookup) Lookup(ctx context.Context, opts lookupOptions) error {
+	slog.Debug("Execute lookup", "opts", opts)
 
-	// get all items
-	list, err := uc.repo.GetAll(opts.Filter())
-	if err != nil {
-		return logger.Error("Lookup", "get all error", err, "filter", opts.Filter())
+	switch opts.Format() {
+	case domain.LookupSimple:
+		err := uc.simple.Lookup(ctx, opts)
+		if err != nil {
+			return logger.Error("Lookup", "simple lookup error", err)
+		}
+	case domain.LookupFull:
+		err := uc.full.Lookup(ctx, opts)
+		if err != nil {
+			return logger.Error("Lookup", "full lookup error", err)
+		}
+	case domain.LookupCollapse:
+		err := uc.collapsed.Lookup(ctx, opts)
+		if err != nil {
+			return logger.Error("Lookup", "collapsed lookup error", err)
+		}
+	default:
+		return logger.Error("Lookup", "lookup format error", domain.ErrorUnknownFormat, "format", opts.Format())
 	}
-	slog.Debug("Get all records", "len", list.Count())
-
-	// show list
-	uc.reporter.Report(list)
 
 	slog.Debug("Finished lookup")
 	return nil

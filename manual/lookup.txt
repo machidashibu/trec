@@ -2,9 +2,12 @@ USEAGE: trec -l [options]
   Show records.
 
 Options:
-  --format-simple : Simple format. (default)
-  --format-full   : Full format with recrd ID.
-  --no-filter     : No filtering.
-  --today         : Filter by today.
-  --all-days      : No filtering by start_time.
-  --latest-only   : Keep only the latest record for each unique label.
+  Formats:
+    --simple      : Simple format. (default)
+    --full        : Full format with recrd ID.
+    --collapse    : Collapses durations by test name.
+  Filters:
+    --no-filter   : No filtering.
+    --today       : Filters start_time by today.
+    --all-days    : No filtering by start_time.
+    --latest-only : Keeps only the latest record for each test name.

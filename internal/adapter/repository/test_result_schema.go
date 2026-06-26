@@ -18,6 +18,13 @@ func (s TestResultSchema) TableName() string {
 	return "test_result"
 }
 
+type collapsedTestResult struct {
+	ID       uint64  `gorm:"column:id"`
+	Name     string  `gorm:"column:name"`
+	Duration float64 `gorm:"column:total_duration_secs"`
+	Count    int     `gorm:"column:test_count"`
+}
+
 func newRecord(name string, startTime, endTime time.Time, result string) *TestResultSchema {
 	return &TestResultSchema{
 		Name:      name,
@@ -45,6 +52,14 @@ func toTestList(records []TestResultSchema) domain.TestList {
 			record.EndTime,
 			record.Result,
 		))
+	}
+	return list
+}
+
+func toCollapsedTestList(records []collapsedTestResult) domain.CollapsedTestList {
+	list := domain.CollapsedTestList{}
+	for _, record := range records {
+		list = append(list, model.NewCollapsedTest(record.Name, time.Duration(record.Duration*float64(time.Second)), record.Count))
 	}
 	return list
 }

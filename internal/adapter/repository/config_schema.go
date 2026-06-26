@@ -24,13 +24,14 @@ type RecordingConfig struct {
 }
 
 type LookupConfig struct {
-	DefaultOrder      domain.OrderBy     `yaml:"order"`
-	DefaultFormat     string             `yaml:"format"`
-	DefaultTimeformat string             `yaml:"time_format"`
-	DefaultFilter     LookupFilterConfig `yaml:"filter"`
+	DefaultFormat     domain.LookupFormat `yaml:"format"`
+	DefaultTimeformat string              `yaml:"time_format"`
+	DefaultOrder      domain.OrderBy      `yaml:"order"`
+	DefaultFilter     LookupFilterConfig  `yaml:"filter"`
 }
 
 type LookupFilterConfig struct {
 	StartTimeToday        bool `yaml:"today"`
 	LatestOnlyPerTestname bool `yaml:"latest_only"`
+	Collapse              bool `yaml:"collapse"`
 }

@@ -3,12 +3,12 @@ package model
 import "trec/internal/domain"
 
 type LookupOptions struct {
-	format     string
+	format     domain.LookupFormat
 	timeFormat string
 	filter     domain.Filter
 }
 
-func NewLookupOptions(format, timeFormat string, filter domain.Filter) *LookupOptions {
+func NewLookupOptions(format domain.LookupFormat, timeFormat string, filter domain.Filter) *LookupOptions {
 	return &LookupOptions{
 		format:     format,
 		timeFormat: timeFormat,
@@ -16,7 +16,7 @@ func NewLookupOptions(format, timeFormat string, filter domain.Filter) *LookupOp
 	}
 }
 
-func (lo LookupOptions) Format() string {
+func (lo LookupOptions) Format() domain.LookupFormat {
 	return lo.format
 }
 

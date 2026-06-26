@@ -8,6 +8,7 @@ import (
 var (
 	ErrorInvalidConfig          = errors.New("invalid config")
 	ErrorInvalidTestNamePattern = errors.New("invalid testname pattern")
+	ErrorUnknownFormat          = errors.New("unknown format")
 )
 
 type Test interface {
@@ -22,6 +23,22 @@ type TestList interface {
 	Count() int
 	Get(index int) (Test, RecordId)
 }
+
+type CollaposedTest interface {
+	Name() string
+	Duration() time.Duration
+	Count() int
+}
+
+type CollapsedTestList []CollaposedTest
+
+type LookupFormat string
+
+const (
+	LookupFull     LookupFormat = "full"
+	LookupSimple   LookupFormat = "simple"
+	LookupCollapse LookupFormat = "collapse"
+)
 
 type RecordId uint64
 

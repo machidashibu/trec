@@ -98,10 +98,12 @@ func run() int {
 			return man.Show(mode)
 		}
 		// prepare lookup
-		formatter := presenter.NewLookupFormatter(opts.Format(), opts.TimeFormat())
-		reporter := presenter.NewLookupReporter(printer, formatter)
+		tf := presenter.NewDurationFormatter(opts.TimeFormat())
+		simple := usecase.NewLookupSimple(repoTestResult, presenter.NewLookupSimpleReporter(printer, tf))
+		full := usecase.NewLookupFull(repoTestResult, presenter.NewLookupFullReporter(printer, tf))
+		collapsed := usecase.NewLookupCollapsed(repoTestResult, presenter.NewLookupCollapsedReporter(printer, tf))
 		// lookup records
-		uc := usecase.NewLookup(repoTestResult, reporter)
+		uc := usecase.NewLookup(simple, full, collapsed)
 		if err := uc.Lookup(ctx, opts); err != nil {
 			return exit(err)
 		}

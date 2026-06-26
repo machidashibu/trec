@@ -2,18 +2,18 @@ package model
 
 import "trec/internal/domain"
 
-type recordListItem struct {
+type testListItem struct {
 	id   domain.RecordId
 	test domain.Test
 }
 
 type TestList struct {
-	items []recordListItem
+	items []testListItem
 }
 
 func NewRecordList() *TestList {
 	return &TestList{
-		items: []recordListItem{},
+		items: []testListItem{},
 	}
 }
 
@@ -26,7 +26,7 @@ func (tl TestList) Get(index int) (domain.Test, domain.RecordId) {
 }
 
 func (tl *TestList) Add(id domain.RecordId, test domain.Test) {
-	tl.items = append(tl.items, recordListItem{
+	tl.items = append(tl.items, testListItem{
 		id:   id,
 		test: test,
 	})

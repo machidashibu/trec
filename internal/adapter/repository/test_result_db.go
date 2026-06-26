@@ -44,10 +44,7 @@ func (d *TestResultDatabase) Add(name string, start time.Time, end time.Time, re
 	return model.NewTest(record.Name, record.StartTime, record.EndTime, record.Result), nil
 }
 
-// GetAll gets all records with filter.
-func (d *TestResultDatabase) GetAll(filter domain.Filter) (domain.TestList, error) {
-	slog.Debug("Called TestResultDatabase.GetAll", "filter", filter)
-
+func (d *TestResultDatabase) applyFilter(filter domain.Filter) *gorm.DB {
 	db := d.infra.DB()
 	// set filter
 	if filter.Today() {
@@ -77,6 +74,14 @@ func (d *TestResultDatabase) GetAll(filter domain.Filter) (domain.TestList, erro
 	// 	db = db.Order(order)
 	// }
 
+	return db
+}
+
+func (d *TestResultDatabase) GetAll(filter domain.Filter) (domain.TestList, error) {
+	slog.Debug("Called TestResultDatabase.GetAll", "filter", filter)
+
+	db := d.applyFilter(filter)
+
 	// get records
 	var records []TestResultSchema
 	if err := db.Find(&records).Error; err != nil {
@@ -85,6 +90,24 @@ func (d *TestResultDatabase) GetAll(filter domain.Filter) (domain.TestList, erro
 	slog.Debug("Get all records", "len", len(records))
 
 	return toTestList(records), nil
+}
+
+func (d *TestResultDatabase) GetCollapsed(filter domain.Filter) (domain.CollapsedTestList, error) {
+	slog.Debug("Called TestResultDatabase.GetCollapsed", "filter", filter)
+
+	db := d.applyFilter(filter)
+	db = db.Model(&TestResultSchema{}).
+		Select("MIN(id) AS id, name, COUNT(*) AS test_count, SUM((julianday(end_time) - julianday(start_time)) * 86400.0) AS total_duration_secs")
+	db = db.Group("name").Order("name ASC")
+
+	// get records
+	var records []collapsedTestResult
+	if err := db.Find(&records).Error; err != nil {
+		return nil, logger.Error("TestResultDatabase", "find error", err)
+	}
+	slog.Debug("Get collapsed records", "len", len(records))
+
+	return toCollapsedTestList(records), nil
 }
 
 // GetById gets record by id.

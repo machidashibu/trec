@@ -8,4 +8,4 @@ lookup:
   time_format: "#:#"
   filter:
     today: true
-    latest_only: true
+    # latest_only: true

@@ -8,6 +8,10 @@ import (
 	"trec/internal/domain"
 )
 
+type resoringRepository interface {
+	Add(name string, start time.Time, end time.Time, result string) (domain.Test, error)
+}
+
 type recordingTicker interface {
 	Start(ctx context.Context)
 	Tick() <-chan time.Time
@@ -25,13 +29,13 @@ type recordingReporter interface {
 }
 
 type Recording struct {
-	repo     domain.TestResultRepository
+	repo     resoringRepository
 	ticker   recordingTicker
 	in       recordingInput
 	reporter recordingReporter
 }
 
-func NewRecording(repo domain.TestResultRepository, ticker recordingTicker, in recordingInput, reporter recordingReporter) *Recording {
+func NewRecording(repo resoringRepository, ticker recordingTicker, in recordingInput, reporter recordingReporter) *Recording {
 	return &Recording{
 		repo:     repo,
 		ticker:   ticker,
