@@ -22,11 +22,17 @@ func ParseLookupOptions(args []string, config *repository.LookupConfig) (*model.
 	// get time format
 	timeFormat := config.DefaultTimeformat
 
-	// get filter.today
+	// NOTE: Does not use configuration file options if specified command line arguments
+	defaultConfig := new(repository.LookupConfig)
+	if len(args) == 0 {
+		defaultConfig = config
+	}
+
+	// get filter
 	filter := model.NewNoFilter() // default:no filter
 	if !slices.Contains(args, "--no-filter") {
 		// get today
-		today := config.DefaultFilter.StartTimeToday
+		today := defaultConfig.DefaultFilter.StartTimeToday
 		if slices.Contains(args, "--all-days") {
 			today = false
 		} else if slices.Contains(args, "--today") {
@@ -34,7 +40,7 @@ func ParseLookupOptions(args []string, config *repository.LookupConfig) (*model.
 		}
 
 		// get latest only
-		latestOnly := config.DefaultFilter.LatestOnlyPerTestname
+		latestOnly := defaultConfig.DefaultFilter.LatestOnlyPerTestname
 		if slices.Contains(args, "--latest-only") {
 			latestOnly = true
 		}
