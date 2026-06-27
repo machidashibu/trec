@@ -1,30 +1,26 @@
 package presenter
 
 import (
-	"fmt"
 	"trec/internal/domain"
 )
 
-type lookupSimpleOutput interface {
-	Print(text string)
-}
-
 type LookupSimpleReporter struct {
-	out lookupSimpleOutput
-	tf  *DurationFormatter
+	table tableReporter
+	timef *DurationFormatter
 }
 
-func NewLookupSimpleReporter(out lookupSimpleOutput, tf *DurationFormatter) *LookupSimpleReporter {
+func NewLookupSimpleReporter(table tableReporter, timef *DurationFormatter) *LookupSimpleReporter {
 	return &LookupSimpleReporter{
-		out: out,
-		tf:  tf,
+		table: table,
+		timef: timef,
 	}
 }
 
 func (r LookupSimpleReporter) Report(list domain.TestList) {
+	r.table.Header("name", "result", "duration")
 	for index := 0; index < list.Count(); index++ {
 		test, _ := list.Get(index)
-		r.out.Print(fmt.Sprintf("%s %s %s", test.Name(), test.Result(), r.tf.String(test.Duration())))
+		r.table.Row(test.Name(), test.Result(), r.timef.String(test.Duration()))
 	}
-	r.out.Print(fmt.Sprintf("%d items", list.Count()))
+	r.table.Save()
 }

@@ -24,10 +24,11 @@ type RecordingConfig struct {
 }
 
 type LookupConfig struct {
-	DefaultFormat     domain.LookupFormat `yaml:"format"`
-	DefaultTimeformat string              `yaml:"time_format"`
-	DefaultOrder      domain.OrderBy      `yaml:"order"`
-	DefaultFilter     LookupFilterConfig  `yaml:"filter"`
+	DefaultStyle      domain.LookupStyle `yaml:"style"`
+	DefaultFormat     domain.TableFormat `yaml:"format"`
+	DefaultTimeformat string             `yaml:"time_format"`
+	DefaultOrder      domain.OrderBy     `yaml:"order"`
+	DefaultFilter     LookupFilterConfig `yaml:"filter"`
 }
 
 type LookupFilterConfig struct {

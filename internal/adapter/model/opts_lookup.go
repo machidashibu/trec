@@ -3,20 +3,26 @@ package model
 import "trec/internal/domain"
 
 type LookupOptions struct {
-	format     domain.LookupFormat
+	style      domain.LookupStyle
+	format     domain.TableFormat
 	timeFormat string
 	filter     domain.Filter
 }
 
-func NewLookupOptions(format domain.LookupFormat, timeFormat string, filter domain.Filter) *LookupOptions {
+func NewLookupOptions(style domain.LookupStyle, format domain.TableFormat, timeFormat string, filter domain.Filter) *LookupOptions {
 	return &LookupOptions{
+		style:      style,
 		format:     format,
 		timeFormat: timeFormat,
 		filter:     filter,
 	}
 }
 
-func (lo LookupOptions) Format() domain.LookupFormat {
+func (lo LookupOptions) Style() domain.LookupStyle {
+	return lo.style
+}
+
+func (lo LookupOptions) Format() domain.TableFormat {
 	return lo.format
 }
 

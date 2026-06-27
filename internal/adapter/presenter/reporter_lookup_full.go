@@ -1,38 +1,34 @@
 package presenter
 
 import (
-	"fmt"
 	"time"
 	"trec/internal/domain"
 )
 
-type lookupFullOutput interface {
-	Print(text string)
-}
-
 type LookupFullReporter struct {
-	out lookupFullOutput
-	tf  *DurationFormatter
+	table tableReporter
+	timef *DurationFormatter
 }
 
-func NewLookupFullReporter(out lookupFullOutput, tf *DurationFormatter) *LookupFullReporter {
+func NewLookupFullReporter(table tableReporter, timef *DurationFormatter) *LookupFullReporter {
 	return &LookupFullReporter{
-		out: out,
-		tf:  tf,
+		table: table,
+		timef: timef,
 	}
 }
 
 func (r LookupFullReporter) Report(list domain.TestList) {
+	r.table.Header("id", "name", "result", "start_time", "end_time", "duration")
 	for index := 0; index < list.Count(); index++ {
 		test, id := list.Get(index)
-		r.out.Print(fmt.Sprintf("[%d] %s %s %s %s %s",
+		r.table.Row(
 			id,
 			test.Name(),
 			test.Result(),
 			test.StartTime().Format(time.DateTime),
 			test.EndTime().Format(time.DateTime),
-			r.tf.String(test.Duration()),
-		))
+			r.timef.String(test.Duration()),
+		)
 	}
-	r.out.Print(fmt.Sprintf("%d items", list.Count()))
+	r.table.Save()
 }

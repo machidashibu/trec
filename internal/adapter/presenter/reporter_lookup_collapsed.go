@@ -1,29 +1,25 @@
 package presenter
 
 import (
-	"fmt"
 	"trec/internal/domain"
 )
 
-type lookupCollapsedOutput interface {
-	Print(text string)
-}
-
 type LookupCollapsedReporter struct {
-	out lookupCollapsedOutput
-	tf  *DurationFormatter
+	table tableReporter
+	timef *DurationFormatter
 }
 
-func NewLookupCollapsedReporter(out lookupCollapsedOutput, tf *DurationFormatter) *LookupCollapsedReporter {
+func NewLookupCollapsedReporter(table tableReporter, timef *DurationFormatter) *LookupCollapsedReporter {
 	return &LookupCollapsedReporter{
-		out: out,
-		tf:  tf,
+		table: table,
+		timef: timef,
 	}
 }
 
 func (r LookupCollapsedReporter) Report(list domain.CollapsedTestList) {
+	r.table.Header("name", "duration", "count")
 	for _, item := range list {
-		r.out.Print(fmt.Sprintf("%s %s (%d times)", item.Name(), r.tf.String(item.Duration()), item.Count()))
+		r.table.Row(item.Name(), r.timef.String(item.Duration()), item.Count())
 	}
-	r.out.Print(fmt.Sprintf("%d items", len(list)))
+	r.table.Save()
 }

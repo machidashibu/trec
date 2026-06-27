@@ -2,10 +2,16 @@ USEAGE: trec -l [options]
   Show records.
 
 Options:
-  Formats:
+  Style:
     --simple      : Simple format. (default)
     --full        : Full format with recrd ID.
     --collapse    : Collapses durations by test name.
+  Format:
+    -c --csv      : CSV
+    -j --json     : JSON
+    -m --markdown : Markdown table
+    -p --pjson    ; Pretty JSON
+    -t --text     : Plain text
   Filters:
     --no-filter   : No filtering.
     --today       : Filters start_time by today.

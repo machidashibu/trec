@@ -8,15 +8,34 @@ import (
 )
 
 func ParseLookupOptions(args []string, config *repository.LookupConfig) (*model.LookupOptions, error) {
+	// get style
+	style := domain.LookupSimple // default:simple
+	if config.DefaultFormat != "" {
+		style = config.DefaultStyle
+	}
+	if slices.Contains(args, "--full") {
+		style = domain.LookupFull
+	} else if slices.Contains(args, "--collapse") {
+		style = domain.LookupCollapse
+	} else if slices.Contains(args, "--simple") {
+		style = domain.LookupSimple
+	}
+
 	// get format
-	format := domain.LookupSimple // default:simple
+	format := domain.TableText // default;text
 	if config.DefaultFormat != "" {
 		format = config.DefaultFormat
 	}
-	if slices.Contains(args, "--full") {
-		format = domain.LookupFull
-	} else if slices.Contains(args, "--collapse") {
-		format = domain.LookupCollapse
+	if slices.Contains(args, "-c") || slices.Contains(args, "--csv") {
+		format = domain.TableCsv
+	} else if slices.Contains(args, "-j") || slices.Contains(args, "--json") {
+		format = domain.TableJson
+	} else if slices.Contains(args, "-m") || slices.Contains(args, "--markdown") {
+		format = domain.TableMarkdown
+	} else if slices.Contains(args, "-p") || slices.Contains(args, "--pjson") {
+		format = domain.TablePrettyJson
+	} else if slices.Contains(args, "-t") || slices.Contains(args, "--text") {
+		format = domain.TableText
 	}
 
 	// get time format
@@ -47,5 +66,6 @@ func ParseLookupOptions(args []string, config *repository.LookupConfig) (*model.
 
 		filter = model.NewFilter(today, latestOnly)
 	}
-	return model.NewLookupOptions(format, timeFormat, filter), nil
+
+	return model.NewLookupOptions(style, format, timeFormat, filter), nil
 }

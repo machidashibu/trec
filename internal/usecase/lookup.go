@@ -8,7 +8,7 @@ import (
 )
 
 type lookupOptions interface {
-	Format() domain.LookupFormat
+	Style() domain.LookupStyle
 	// LookupOrder() domain.OrderBy
 	Filter() domain.Filter
 }
@@ -30,7 +30,7 @@ func NewLookup(simple *LookupSimple, full *LookupFull, collapsed *LookupCollapse
 func (uc *Lookup) Lookup(ctx context.Context, opts lookupOptions) error {
 	slog.Debug("Execute lookup", "opts", opts)
 
-	switch opts.Format() {
+	switch opts.Style() {
 	case domain.LookupSimple:
 		err := uc.simple.Lookup(ctx, opts)
 		if err != nil {
@@ -47,7 +47,7 @@ func (uc *Lookup) Lookup(ctx context.Context, opts lookupOptions) error {
 			return logger.Error("Lookup", "collapsed lookup error", err)
 		}
 	default:
-		return logger.Error("Lookup", "lookup format error", domain.ErrorUnknownFormat, "format", opts.Format())
+		return logger.Error("Lookup", "lookup format error", domain.ErrorUnknownFormat, "style", opts.Style())
 	}
 
 	slog.Debug("Finished lookup")

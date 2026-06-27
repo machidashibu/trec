@@ -8,6 +8,7 @@ import (
 var (
 	ErrorInvalidConfig          = errors.New("invalid config")
 	ErrorInvalidTestNamePattern = errors.New("invalid testname pattern")
+	ErrorInvalidOperation       = errors.New("invalid operation")
 	ErrorUnknownFormat          = errors.New("unknown format")
 )
 
@@ -32,12 +33,22 @@ type CollaposedTest interface {
 
 type CollapsedTestList []CollaposedTest
 
-type LookupFormat string
+type LookupStyle string
 
 const (
-	LookupFull     LookupFormat = "full"
-	LookupSimple   LookupFormat = "simple"
-	LookupCollapse LookupFormat = "collapse"
+	LookupFull     LookupStyle = "full"
+	LookupSimple   LookupStyle = "simple"
+	LookupCollapse LookupStyle = "collapse"
+)
+
+type TableFormat string
+
+const (
+	TableCsv        TableFormat = "csv"
+	TableJson       TableFormat = "json"
+	TableMarkdown   TableFormat = "markdown"
+	TablePrettyJson TableFormat = "pretty json"
+	TableText       TableFormat = "text"
 )
 
 type RecordId uint64

@@ -4,7 +4,7 @@ log:
 recording:
   time_format: "#:#"
 lookup:
-  format: simple
+  style: simple
   time_format: "#:#"
   filter:
     today: true
