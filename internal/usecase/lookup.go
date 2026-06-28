@@ -9,8 +9,8 @@ import (
 
 type lookupOptions interface {
 	Style() domain.LookupStyle
-	// LookupOrder() domain.OrderBy
 	Filter() domain.Filter
+	Order() []domain.Order
 }
 
 type Lookup struct {

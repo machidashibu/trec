@@ -53,6 +53,11 @@ const (
 
 type RecordId uint64
 
+type Filter interface {
+	Today() bool
+	LatestOnly() bool
+}
+
 type OrderBy string
 
 const (
@@ -66,7 +71,7 @@ const (
 	OrderByDesc     OrderBy = "DESC"
 )
 
-type Filter interface {
-	Today() bool
-	LatestOnly() bool
+type Order interface {
+	Column() OrderBy
+	Desc() bool
 }

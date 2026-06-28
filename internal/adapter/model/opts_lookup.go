@@ -7,14 +7,16 @@ type LookupOptions struct {
 	format     domain.TableFormat
 	timeFormat string
 	filter     domain.Filter
+	order      domain.Order
 }
 
-func NewLookupOptions(style domain.LookupStyle, format domain.TableFormat, timeFormat string, filter domain.Filter) *LookupOptions {
+func NewLookupOptions(style domain.LookupStyle, format domain.TableFormat, timeFormat string, filter domain.Filter, order domain.Order) *LookupOptions {
 	return &LookupOptions{
 		style:      style,
 		format:     format,
 		timeFormat: timeFormat,
 		filter:     filter,
+		order:      order,
 	}
 }
 
@@ -32,4 +34,12 @@ func (lo LookupOptions) TimeFormat() string {
 
 func (lo LookupOptions) Filter() domain.Filter {
 	return lo.filter
+}
+
+func (l LookupOptions) Order() []domain.Order {
+	if l.order == nil {
+		return []domain.Order{} // no order
+	} else {
+		return NewOrderList(l.order)
+	}
 }

@@ -67,5 +67,24 @@ func ParseLookupOptions(args []string, config *repository.LookupConfig) (*model.
 		filter = model.NewFilter(today, latestOnly)
 	}
 
-	return model.NewLookupOptions(style, format, timeFormat, filter), nil
+	// get order
+	var order domain.Order
+	var by domain.OrderBy
+	var desc bool
+	for _, arg := range args {
+		v := MapToOrderBy(arg)
+		switch v {
+		case domain.OrderByAsc:
+			desc = false
+		case domain.OrderByDesc:
+			desc = true
+		default:
+			by = v
+		}
+	}
+	if by != "" {
+		order = model.NewOrder(by, desc)
+	}
+
+	return model.NewLookupOptions(style, format, timeFormat, filter, order), nil
 }

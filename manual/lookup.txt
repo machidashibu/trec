@@ -17,3 +17,11 @@ Options:
     --today       : Filters start_time by today.
     --all-days    : No filtering by start_time.
     --latest-only : Keeps only the latest record for each test name.
+  Order:
+    --name        : Orders by test name.
+    --start       : Orders by start time.
+    --end         : Orders by end time.
+    --result      : Orders by test result.
+    --duration    : Orders by test duration.
+    --asc         : Orders with ASC. (default)
+    --desc        : Orders with DESC.

@@ -9,6 +9,7 @@ import (
 	"trec/internal/domain"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type infraDB interface {
@@ -40,84 +41,6 @@ func (d *TestResultDatabase) Add(name string, start time.Time, end time.Time, re
 		return nil, logger.Error("RecordsDatabase", "create error", err, "record", record)
 	}
 	slog.Debug("Created record", "record", record)
-
-	return model.NewTest(record.Name, record.StartTime, record.EndTime, record.Result), nil
-}
-
-func (d *TestResultDatabase) applyFilter(filter domain.Filter) *gorm.DB {
-	db := d.infra.DB()
-	// set filter
-	if filter.Today() {
-		now := time.Now()
-		startOfDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
-		endOfDay := startOfDay.Add(24 * time.Hour)
-		db = db.Where("start_time >= ? AND start_time < ?", startOfDay, endOfDay)
-	}
-	if filter.LatestOnly() {
-		// keep only the latest record for each unique name
-		sub := d.infra.DB().Model(&TestResultSchema{}).
-			Select("name, MAX(start_time) AS max_start_time").
-			Group("name")
-
-		query := fmt.Sprintf(
-			"JOIN (?) AS latest ON %s.name = latest.name AND %s.start_time = latest.max_start_time",
-			(&TestResultSchema{}).TableName(),
-			(&TestResultSchema{}).TableName(),
-		)
-		db = db.Joins(query, sub)
-	}
-
-	// set order
-	// if strings.HasPrefix(string(order), string(domain.OrderByDuration)) {
-	// 	db = db.Order("julianday(end_time) - julianday(start_time) ASC")
-	// } else {
-	// 	db = db.Order(order)
-	// }
-
-	return db
-}
-
-func (d *TestResultDatabase) GetAll(filter domain.Filter) (domain.TestList, error) {
-	slog.Debug("Called TestResultDatabase.GetAll", "filter", filter)
-
-	db := d.applyFilter(filter)
-
-	// get records
-	var records []TestResultSchema
-	if err := db.Find(&records).Error; err != nil {
-		return nil, logger.Error("TestResultDatabase", "find error", err)
-	}
-	slog.Debug("Get all records", "len", len(records))
-
-	return toTestList(records), nil
-}
-
-func (d *TestResultDatabase) GetCollapsed(filter domain.Filter) (domain.CollapsedTestList, error) {
-	slog.Debug("Called TestResultDatabase.GetCollapsed", "filter", filter)
-
-	db := d.applyFilter(filter)
-	db = db.Model(&TestResultSchema{}).
-		Select("MIN(id) AS id, name, COUNT(*) AS test_count, SUM((julianday(end_time) - julianday(start_time)) * 86400.0) AS total_duration_secs")
-	db = db.Group("name").Order("name ASC")
-
-	// get records
-	var records []collapsedTestResult
-	if err := db.Find(&records).Error; err != nil {
-		return nil, logger.Error("TestResultDatabase", "find error", err)
-	}
-	slog.Debug("Get collapsed records", "len", len(records))
-
-	return toCollapsedTestList(records), nil
-}
-
-// GetById gets record by id.
-func (d *TestResultDatabase) GetById(id domain.RecordId) (domain.Test, error) {
-	slog.Debug("Called TestResultDatabase.GetById", "id", id)
-
-	var record TestResultSchema
-	if err := d.infra.DB().Where("id = ?", id).First(&record).Error; err != nil {
-		return nil, logger.Error("TestResultDatabase", "first error", err, "id", id)
-	}
 
 	return model.NewTest(record.Name, record.StartTime, record.EndTime, record.Result), nil
 }
@@ -179,4 +102,111 @@ func (d *TestResultDatabase) Delete(id domain.RecordId) error {
 	slog.Debug("Deleted record")
 
 	return nil
+}
+
+// GetAll gets all records, it is applied filter.
+func (d *TestResultDatabase) GetAll(filter domain.Filter, order []domain.Order) (domain.TestList, error) {
+	slog.Debug("Called TestResultDatabase.GetAll", "filter", filter, "order", order)
+
+	// applies params
+	db := d.applyParams(filter, order)
+
+	// get records
+	var records []TestResultSchema
+	if err := db.Find(&records).Error; err != nil {
+		return nil, logger.Error("TestResultDatabase", "find error", err)
+	}
+	slog.Debug("Get all records", "len", len(records))
+
+	return toTestList(records), nil
+}
+
+// GetCollapsed gets collapsed records by test name, it is applied filter.
+func (d *TestResultDatabase) GetCollapsed(filter domain.Filter, order []domain.Order) (domain.CollapsedTestList, error) {
+	slog.Debug("Called TestResultDatabase.GetCollapsed", "filter", filter, "order", order)
+
+	// applies params
+	db := d.applyParams(filter, order)
+
+	// applies filter for collapsed get
+	db = db.Model(&TestResultSchema{}).
+		Select("MIN(id) AS id, name, COUNT(*) AS test_count, SUM((julianday(end_time) - julianday(start_time)) * 86400.0) AS total_duration_secs")
+	db = db.Group("name").Order("name ASC")
+
+	// get records
+	var records []collapsedTestResult
+	if err := db.Find(&records).Error; err != nil {
+		return nil, logger.Error("TestResultDatabase", "find error", err)
+	}
+	slog.Debug("Get collapsed records", "len", len(records))
+
+	return toCollapsedTestList(records), nil
+}
+
+// GetById gets record by id.
+func (d *TestResultDatabase) GetById(id domain.RecordId) (domain.Test, error) {
+	slog.Debug("Called TestResultDatabase.GetById", "id", id)
+
+	var record TestResultSchema
+	if err := d.infra.DB().Where("id = ?", id).First(&record).Error; err != nil {
+		return nil, logger.Error("TestResultDatabase", "first error", err, "id", id)
+	}
+
+	return model.NewTest(record.Name, record.StartTime, record.EndTime, record.Result), nil
+}
+
+func (d *TestResultDatabase) applyParams(filter domain.Filter, order []domain.Order) *gorm.DB {
+	db := d.infra.DB()
+	db = d.applyFilter(db, filter)
+	db = d.applyOrder(db, order)
+	return db
+}
+
+func (d *TestResultDatabase) applyFilter(db *gorm.DB, filter domain.Filter) *gorm.DB {
+	// set filter
+	if filter.Today() {
+		now := time.Now()
+		startOfDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+		endOfDay := startOfDay.Add(24 * time.Hour)
+		db = db.Where("start_time >= ? AND start_time < ?", startOfDay, endOfDay)
+	}
+	if filter.LatestOnly() {
+		// keep only the latest record for each unique name
+		sub := d.infra.DB().Model(&TestResultSchema{}).
+			Select("name, MAX(start_time) AS max_start_time").
+			Group("name")
+
+		query := fmt.Sprintf(
+			"JOIN (?) AS latest ON %s.name = latest.name AND %s.start_time = latest.max_start_time",
+			(&TestResultSchema{}).TableName(),
+			(&TestResultSchema{}).TableName(),
+		)
+		db = db.Joins(query, sub)
+	}
+
+	return db
+}
+
+func (d *TestResultDatabase) applyOrder(db *gorm.DB, order []domain.Order) *gorm.DB {
+	if len(order) == 0 {
+		return db // no order
+	}
+
+	// set order
+	for _, o := range order {
+		if o.Column() == domain.OrderByDuration {
+			if o.Desc() {
+				db = db.Order("julianday(end_time) - julianday(start_time) DESC")
+			} else {
+				db = db.Order("julianday(end_time) - julianday(start_time) ASC")
+			}
+		} else {
+			db = db.Order(clause.OrderByColumn{
+				Column: clause.Column{Name: string(o.Column())}, // TODO: implements mapper
+				Desc:   o.Desc(),
+			})
+		}
+	}
+
+	return db
 }

@@ -8,7 +8,7 @@ import (
 )
 
 type lookupFullRepository interface {
-	GetAll(filter domain.Filter) (domain.TestList, error)
+	GetAll(filter domain.Filter, order []domain.Order) (domain.TestList, error)
 }
 
 type lookupFullReporter interface {
@@ -16,8 +16,8 @@ type lookupFullReporter interface {
 }
 
 type lookupFullOptions interface {
-	// LookupOrder() domain.OrderBy
 	Filter() domain.Filter
+	Order() []domain.Order
 }
 
 type LookupFull struct {
@@ -36,7 +36,7 @@ func (uc *LookupFull) Lookup(_ context.Context, opts lookupFullOptions) error {
 	slog.Debug("Execute full lookup")
 
 	// get all items
-	list, err := uc.repo.GetAll(opts.Filter())
+	list, err := uc.repo.GetAll(opts.Filter(), opts.Order())
 	if err != nil {
 		return logger.Error("LookupFull", "get all error", err, "filter", opts.Filter())
 	}

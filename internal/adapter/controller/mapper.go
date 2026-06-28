@@ -3,6 +3,7 @@ package controller
 import (
 	"strings"
 	"trec/internal/adapter/model"
+	"trec/internal/domain"
 )
 
 func MapToMode(mode string) model.Mode {
@@ -19,5 +20,26 @@ func MapToMode(mode string) model.Mode {
 		return model.ModeHelp
 	default:
 		return model.ModeUnknown
+	}
+}
+
+func MapToOrderBy(by string) domain.OrderBy {
+	switch strings.ToLower(by) {
+	case "--name":
+		return domain.OrderByName
+	case "--start":
+		return domain.OrderByStart
+	case "--end":
+		return domain.OrderByEnd
+	case "--result":
+		return domain.OrderByResult
+	case "--duration":
+		return domain.OrderByDuration
+	case "--asc":
+		return domain.OrderByAsc
+	case "--desc":
+		return domain.OrderByDesc
+	default:
+		return ""
 	}
 }

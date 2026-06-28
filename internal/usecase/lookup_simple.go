@@ -8,7 +8,7 @@ import (
 )
 
 type lookupSimpleRepository interface {
-	GetAll(filter domain.Filter) (domain.TestList, error)
+	GetAll(filter domain.Filter, order []domain.Order) (domain.TestList, error)
 }
 
 type lookupSimpleReporter interface {
@@ -16,8 +16,8 @@ type lookupSimpleReporter interface {
 }
 
 type lookupSimpleOptions interface {
-	// LookupOrder() domain.OrderBy
 	Filter() domain.Filter
+	Order() []domain.Order
 }
 
 type LookupSimple struct {
@@ -36,7 +36,7 @@ func (uc *LookupSimple) Lookup(_ context.Context, opts lookupSimpleOptions) erro
 	slog.Debug("Execute simple lookup")
 
 	// get all items
-	list, err := uc.repo.GetAll(opts.Filter())
+	list, err := uc.repo.GetAll(opts.Filter(), opts.Order())
 	if err != nil {
 		return logger.Error("LookupSimple", "get all error", err, "filter", opts.Filter())
 	}

@@ -8,7 +8,7 @@ import (
 )
 
 type lookupCollapsedRepository interface {
-	GetCollapsed(filter domain.Filter) (domain.CollapsedTestList, error)
+	GetCollapsed(filter domain.Filter, order []domain.Order) (domain.CollapsedTestList, error)
 }
 
 type lookupCollapsedReporter interface {
@@ -16,8 +16,8 @@ type lookupCollapsedReporter interface {
 }
 
 type lookupCollapsedOptions interface {
-	// LookupOrder() domain.OrderBy
 	Filter() domain.Filter
+	Order() []domain.Order
 }
 
 type LookupCollapsed struct {
@@ -36,7 +36,7 @@ func (uc *LookupCollapsed) Lookup(_ context.Context, opts lookupCollapsedOptions
 	slog.Debug("Execute collapsed lookup")
 
 	// get all items
-	list, err := uc.repo.GetCollapsed(opts.Filter())
+	list, err := uc.repo.GetCollapsed(opts.Filter(), opts.Order())
 	if err != nil {
 		return logger.Error("LookupCollapsed", "get all error", err, "filter", opts.Filter())
 	}
